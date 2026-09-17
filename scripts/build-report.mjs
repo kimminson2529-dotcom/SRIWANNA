@@ -1,0 +1,227 @@
+// แปลงไฟล์ "รายงานการขายหน้าร้าน - ตามสินค้า - ตามสาขา" (.xls) -> app/data/report.json
+// รันด้วย: npm run build:report
+import * as XLSX from "xlsx";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, "..");
+const DATA_DIR = path.join(ROOT, "Data", "รายงานการขายตามสินค้า");
+const OUT = path.join(ROOT, "app", "data", "report.json");
+
+const MONTH_LABEL = [
+  "", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+  "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.",
+];
+
+// ตำแหน่งคอลัมน์ (0-indexed) ของรายงานหน้าร้าน
+const COL = {
+  seq: 0,
+  code: 3,
+  name: 5,
+  qtySub: 8, // จำนวน (แถวรวมแต่ละสินค้า / แถวรวม)
+  qtyBranch: 9, // จำนวน (แถวรายสาขา)
+  unit: 11,
+  price: 12,
+  netTotal: 21, // มูลค่ารวม (สุทธิ)
+};
+
+const CODE_RE = /^[A-Za-z]\d{1,2}-\w+/;
+const numAt = (r, i) => (typeof r[i] === "number" ? r[i] : 0);
+const str = (v) => (typeof v === "string" ? v.trim() : "");
+
+function getPeriod(rows) {
+  for (const r of rows.slice(0, 12)) {
+    for (const c of r || []) {
+      if (typeof c === "string" && c.includes("จาก:")) {
+        const m = c.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        if (m) return { order: Number(m[2]), ceYear: Number(m[3]) };
+      }
+    }
+  }
+  return { order: 999, ceYear: null };
+}
+
+function parseWorkbook(filePath) {
+  const buf = fs.readFileSync(filePath);
+  const wb = XLSX.read(buf, { type: "buffer" });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, {
+    header: 1,
+    raw: true,
+    defval: null,
+  });
+
+  const products = [];
+  const branchMap = new Map();
+  let grand = null;
+  let cur = null;
+
+  for (const r of rows) {
+    if (!Array.isArray(r)) continue;
+    const c0 = r[COL.seq];
+    const c3 = str(r[COL.code]);
+    const c5 = str(r[COL.name]);
+
+    // แถวหัวสินค้า
+    if (typeof c0 === "number" && CODE_RE.test(c3)) {
+      cur = { code: c3, name: c5, unit: "" };
+      continue;
+    }
+    // แถวรวมทั้งรายงาน
+    if (c3 === "รวม") {
+      grand = { qty: numAt(r, COL.qtySub), value: numAt(r, COL.netTotal) };
+      continue;
+    }
+    // แถวรวมแต่ละสินค้า -> ยอดของสินค้านั้น
+    if (c3 === "รวมแต่ละสินค้า") {
+      if (cur) {
+        products.push({
+          code: cur.code,
+          name: cur.name,
+          unit: cur.unit,
+          qty: numAt(r, COL.qtySub),
+          value: numAt(r, COL.netTotal),
+        });
+      }
+      continue;
+    }
+    // แถวรายสาขา
+    if (c3.startsWith("สาขา")) {
+      const m = c3.match(/\((\d+)\)\s*(.*)$/);
+      const bcode = m ? m[1] : c3;
+      const bname = m ? m[2].trim() : c3.replace(/^สาขา\s*:?\s*/, "");
+      const qty = numAt(r, COL.qtyBranch);
+      const value = numAt(r, COL.netTotal);
+      if (cur && !cur.unit) cur.unit = str(r[COL.unit]);
+      const b = branchMap.get(bcode) || { code: bcode, name: bname, qty: 0, value: 0 };
+      b.qty += qty;
+      b.value += value;
+      if (!b.name && bname) b.name = bname;
+      branchMap.set(bcode, b);
+      continue;
+    }
+  }
+
+  const totalQty = products.reduce((s, p) => s + p.qty, 0);
+  const totalValue = products.reduce((s, p) => s + p.value, 0);
+  return { products, branches: [...branchMap.values()], totalQty, totalValue, grand };
+}
+
+const round2 = (n) => Math.round(n * 100) / 100;
+
+function main() {
+  if (!fs.existsSync(DATA_DIR)) {
+    console.error("ไม่พบโฟลเดอร์ข้อมูล:", DATA_DIR);
+    process.exit(1);
+  }
+  const files = fs
+    .readdirSync(DATA_DIR)
+    .filter((f) => f.toLowerCase().endsWith(".xls"));
+
+  const months = [];
+  const overall = new Map();
+  const branchOverall = new Map();
+
+  for (const f of files) {
+    let parsed;
+    try {
+      parsed = parseWorkbook(path.join(DATA_DIR, f));
+    } catch (e) {
+      console.error("ข้ามไฟล์ (อ่านไม่ได้):", f, "-", e.message);
+      continue;
+    }
+    const { products, branches, totalQty, totalValue, grand } = parsed;
+    const wb = XLSX.read(fs.readFileSync(path.join(DATA_DIR, f)), { type: "buffer" });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
+      header: 1, raw: true, defval: null,
+    });
+    const { order, ceYear } = getPeriod(rows);
+    const be = ceYear ? ceYear + 543 : null;
+
+    if (grand && Math.abs(round2(grand.value) - round2(totalValue)) > 1) {
+      console.warn(
+        `  ⚠ ${f}: ยอดคำนวณ ${round2(totalValue)} ไม่ตรงแถวรวม ${round2(grand.value)}`,
+      );
+    }
+
+    months.push({
+      key: `${be}-${String(order).padStart(2, "0")}`,
+      order,
+      be,
+      label: `${MONTH_LABEL[order] ?? order} ${be}`,
+      totalQty,
+      totalValue: round2(totalValue),
+      productCount: products.length,
+      branchCount: branches.length,
+      products: products
+        .map((p) => ({ ...p, value: round2(p.value) }))
+        .sort((a, b) => b.value - a.value),
+      branches: branches
+        .map((b) => ({ ...b, value: round2(b.value) }))
+        .sort((a, b) => b.value - a.value),
+    });
+
+    for (const p of products) {
+      const k = p.code || p.name;
+      const cur = overall.get(k) || { code: p.code, name: p.name, unit: p.unit, qty: 0, value: 0 };
+      cur.qty += p.qty;
+      cur.value += p.value;
+      if (!cur.name && p.name) cur.name = p.name;
+      overall.set(k, cur);
+    }
+    for (const b of branches) {
+      const cur = branchOverall.get(b.code) || { code: b.code, name: b.name, qty: 0, value: 0 };
+      cur.qty += b.qty;
+      cur.value += b.value;
+      if (!cur.name && b.name) cur.name = b.name;
+      branchOverall.set(b.code, cur);
+    }
+  }
+
+  months.sort((a, b) => (a.be - b.be) || (a.order - b.order));
+
+  const topByValue = [...overall.values()]
+    .map((p) => ({ ...p, value: round2(p.value) }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 20);
+  const topByQty = [...overall.values()]
+    .map((p) => ({ ...p, value: round2(p.value) }))
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 20);
+  const branches = [...branchOverall.values()]
+    .map((b) => ({ ...b, value: round2(b.value) }))
+    .sort((a, b) => b.value - a.value);
+
+  const grandValue = round2(months.reduce((s, m) => s + m.totalValue, 0));
+  const grandQty = months.reduce((s, m) => s + m.totalQty, 0);
+
+  const out = {
+    generatedAt: new Date().toISOString(),
+    source: "รายงานการขายหน้าร้าน - ตามสินค้า - ตามสาขา (.xls)",
+    note: "ยอดขายเป็นมูลค่ารวมสุทธิ (รวมภาษี หลังหักส่วนลด)",
+    grandValue,
+    grandQty,
+    monthCount: months.length,
+    productCount: overall.size,
+    branchCount: branchOverall.size,
+    months,
+    topByValue,
+    topByQty,
+    branches,
+  };
+
+  fs.mkdirSync(path.dirname(OUT), { recursive: true });
+  fs.writeFileSync(OUT, JSON.stringify(out, null, 2), "utf8");
+  console.log("เขียน", OUT);
+  console.log(
+    "เดือน:",
+    months.map((m) => `${m.label}=${m.totalValue.toLocaleString()}฿`).join("  "),
+  );
+  console.log(
+    `รวม ${grandValue.toLocaleString()}฿ | ${grandQty.toLocaleString()} หน่วย | สินค้า ${overall.size} | สาขา ${branchOverall.size}`,
+  );
+}
+
+main();

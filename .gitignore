@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*
+
+# raw source reports (ไฟล์ .xls ดิบ) — แอปใช้ app/data/report.json ที่สรุปแล้วแทน
+/Data

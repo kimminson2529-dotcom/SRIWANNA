@@ -1,92 +1,99 @@
-import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
-import type { Sale } from "./types";
-import { todayISO } from "./lib/format";
-import SaleForm from "./components/SaleForm";
-import SummaryCards from "./components/SummaryCards";
-import SalesChart, { type ChartPoint } from "./components/SalesChart";
-import SalesTable from "./components/SalesTable";
+import Link from "next/link";
+import reportData from "./data/report.json";
+import type { SalesReport } from "./report-types";
+import { baht, num } from "./lib/format";
+import MonthlyBarChart from "./components/MonthlyBarChart";
+import TopProductsChart from "./components/TopProductsChart";
+import BranchChart from "./components/BranchChart";
+import MonthExplorer from "./components/MonthExplorer";
 
-export const dynamic = "force-dynamic";
+const report = reportData as SalesReport;
 
-export default async function Page() {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
+const compactBaht = (v: number) =>
+  new Intl.NumberFormat("th-TH", { notation: "compact", maximumFractionDigits: 2 }).format(v) +
+  " บาท";
 
-  const { data, error } = await supabase
-    .from("sales")
-    .select("*")
-    .order("sale_date", { ascending: false })
-    .order("created_at", { ascending: false });
+function Card({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-100">
+        {value}
+      </p>
+      {sub && <p className="mt-0.5 text-xs text-slate-400">{sub}</p>}
+    </div>
+  );
+}
 
-  const sales = (data ?? []) as Sale[];
+export default function Page() {
+  const monthlyData = report.months.map((m) => ({
+    label: m.label,
+    value: m.totalValue,
+  }));
+  const topData = report.topByValue.slice(0, 10).map((p) => ({
+    name: p.name || p.code,
+    value: p.value,
+  }));
 
-  const totalRevenue = sales.reduce((s, r) => s + Number(r.total), 0);
-  const totalQty = sales.reduce((s, r) => s + Number(r.quantity), 0);
-  const today = todayISO();
-  const todayRevenue = sales
-    .filter((r) => r.sale_date === today)
-    .reduce((s, r) => s + Number(r.total), 0);
-
-  // สรุปยอดรายวันสำหรับกราฟ (เรียงจากเก่าไปใหม่, เอา 14 วันล่าสุด)
-  const byDate = new Map<string, number>();
-  for (const r of sales) {
-    byDate.set(r.sale_date, (byDate.get(r.sale_date) ?? 0) + Number(r.total));
-  }
-  const chartData: ChartPoint[] = Array.from(byDate.entries())
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .slice(-14)
-    .map(([date, total]) => ({
-      label: new Date(date + "T00:00:00").toLocaleDateString("th-TH", {
-        day: "numeric",
-        month: "short",
-      }),
-      total,
-    }));
+  const bestMonth = [...report.months].sort((a, b) => b.totalValue - a.totalValue)[0];
+  const avgPerMonth = report.monthCount ? report.grandValue / report.monthCount : 0;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
-          SRIWANNA · ระบบเก็บยอดขาย
-        </h1>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">
-          บันทึกและสรุปยอดขายรายวัน พร้อมกราฟภาพรวม
-        </p>
+      <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+            SRIWANNA · สรุปการขาย
+          </h1>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
+            รายงานการขายหน้าร้าน · {report.months[0]?.label} –{" "}
+            {report.months[report.months.length - 1]?.label}
+          </p>
+        </div>
+        <Link
+          href="/entry"
+          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+        >
+          + บันทึกยอดขายรายวัน
+        </Link>
       </header>
 
-      {error && (
-        <div className="mb-6 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-          โหลดข้อมูลไม่สำเร็จ: {error.message}
-          <br />
-          ตรวจสอบว่าได้รันสคริปต์ <code>supabase/schema.sql</code>{" "}
-          ใน Supabase แล้วหรือยัง
-        </div>
-      )}
-
       <div className="space-y-6">
-        <SummaryCards
-          totalRevenue={totalRevenue}
-          totalQty={totalQty}
-          orderCount={sales.length}
-          todayRevenue={todayRevenue}
-        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card
+            label="ยอดขายรวม"
+            value={compactBaht(report.grandValue)}
+            sub={`${report.monthCount} เดือน · ${num(report.grandQty)} หน่วย`}
+          />
+          <Card label="เฉลี่ยต่อเดือน" value={compactBaht(avgPerMonth)} />
+          <Card
+            label="เดือนที่ขายมากสุด"
+            value={bestMonth?.label ?? "-"}
+            sub={bestMonth ? baht(bestMonth.totalValue) : ""}
+          />
+          <Card
+            label="สินค้า / สาขา"
+            value={`${num(report.productCount)} / ${report.branchCount}`}
+            sub="รายการ / สาขา"
+          />
+        </div>
+
+        <MonthlyBarChart data={monthlyData} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <SaleForm />
-          <SalesChart data={chartData} />
+          <TopProductsChart data={topData} />
+          <BranchChart branches={report.branches} />
         </div>
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold text-slate-800 dark:text-slate-100">
-            รายการขายทั้งหมด
-          </h2>
-          <SalesTable sales={sales} />
-        </section>
+        <MonthExplorer months={report.months} />
       </div>
 
-      <footer className="mt-10 text-center text-xs text-slate-400">
-        SRIWANNA Sales · Next.js + Supabase
+      <footer className="mt-10 space-y-1 text-center text-xs text-slate-400">
+        <p>{report.note}</p>
+        <p>
+          SRIWANNA Sales · Next.js + Supabase · อัปเดตข้อมูล{" "}
+          {new Date(report.generatedAt).toLocaleDateString("th-TH")}
+        </p>
       </footer>
     </main>
   );
