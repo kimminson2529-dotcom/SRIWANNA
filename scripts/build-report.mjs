@@ -35,12 +35,22 @@ function getPeriod(rows) {
   for (const r of rows.slice(0, 12)) {
     for (const c of r || []) {
       if (typeof c === "string" && c.includes("จาก:")) {
-        const m = c.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-        if (m) return { order: Number(m[2]), ceYear: Number(m[3]) };
+        const dates = [...c.matchAll(/(\d{2})\/(\d{2})\/(\d{4})/g)];
+        if (dates.length) {
+          const start = dates[0];
+          const end = dates[1] || dates[0];
+          const isRange =
+            start[2] !== end[2] || start[3] !== end[3]; // เดือน/ปี ไม่ตรงกัน = ช่วงหลายเดือน
+          return {
+            order: Number(start[2]),
+            ceYear: Number(start[3]),
+            isRange,
+          };
+        }
       }
     }
   }
-  return { order: 999, ceYear: null };
+  return { order: 999, ceYear: null, isRange: false };
 }
 
 function parseWorkbook(filePath) {
@@ -124,7 +134,22 @@ function main() {
   const overall = new Map();
   const branchOverall = new Map();
 
+  const skipped = [];
   for (const f of files) {
+    const wb = XLSX.read(fs.readFileSync(path.join(DATA_DIR, f)), { type: "buffer" });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
+      header: 1, raw: true, defval: null,
+    });
+    const { order, ceYear, isRange } = getPeriod(rows);
+    const be = ceYear ? ceYear + 543 : null;
+
+    // ข้ามไฟล์ที่เป็นช่วงหลายเดือน (กันนับซ้ำกับไฟล์รายเดือน)
+    if (isRange) {
+      console.warn(`  ↷ ข้ามไฟล์ช่วงหลายเดือน (กันนับซ้ำ): ${f}`);
+      skipped.push(f);
+      continue;
+    }
+
     let parsed;
     try {
       parsed = parseWorkbook(path.join(DATA_DIR, f));
@@ -133,12 +158,6 @@ function main() {
       continue;
     }
     const { products, branches, totalQty, totalValue, grand } = parsed;
-    const wb = XLSX.read(fs.readFileSync(path.join(DATA_DIR, f)), { type: "buffer" });
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
-      header: 1, raw: true, defval: null,
-    });
-    const { order, ceYear } = getPeriod(rows);
-    const be = ceYear ? ceYear + 543 : null;
 
     if (grand && Math.abs(round2(grand.value) - round2(totalValue)) > 1) {
       console.warn(
