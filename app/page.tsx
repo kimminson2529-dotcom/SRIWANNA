@@ -1,4 +1,3 @@
-import Link from "next/link";
 import reportData from "./data/report.json";
 import type { SalesReport } from "./report-types";
 import { baht, num } from "./lib/format";
@@ -6,6 +5,7 @@ import MonthlyBarChart from "./components/MonthlyBarChart";
 import MonthlyGrowth from "./components/MonthlyGrowth";
 import TopProductsChart from "./components/TopProductsChart";
 import BranchChart from "./components/BranchChart";
+import AvgBasket from "./components/AvgBasket";
 import MonthExplorer from "./components/MonthExplorer";
 
 const report = reportData as SalesReport;
@@ -38,6 +38,7 @@ export default function Page() {
 
   const bestMonth = [...report.months].sort((a, b) => b.totalValue - a.totalValue)[0];
   const avgPerMonth = report.monthCount ? report.grandValue / report.monthCount : 0;
+  const salesPerBranch = report.branchCount ? report.grandValue / report.branchCount : 0;
 
   const lastM = report.months[report.months.length - 1];
   const prevM = report.months[report.months.length - 2];
@@ -62,22 +63,21 @@ export default function Page() {
             {report.months[report.months.length - 1]?.label}
           </p>
         </div>
-        <Link
-          href="/entry"
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
-        >
-          + บันทึกยอดขายรายวัน
-        </Link>
       </header>
 
       <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card
             label="ยอดขายรวม"
             value={compactBaht(report.grandValue)}
             sub={`${report.monthCount} เดือน · ${num(report.grandQty)} หน่วย`}
           />
           <Card label="เฉลี่ยต่อเดือน" value={compactBaht(avgPerMonth)} />
+          <Card
+            label="ยอดขายต่อสาขา"
+            value={compactBaht(salesPerBranch)}
+            sub={`ยอดรวม ÷ ${report.branchCount} สาขา`}
+          />
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <p className="text-sm text-slate-500 dark:text-slate-400">
               เติบโตล่าสุด (MoM)
@@ -102,6 +102,15 @@ export default function Page() {
             value={bestMonth?.label ?? "-"}
             sub={bestMonth ? baht(bestMonth.totalValue) : ""}
           />
+          <Card
+            label="ยอดเฉลี่ยต่อบิล (AVG Basket)"
+            value={baht(report.basket.avgBasket)}
+            sub={
+              report.basket.scope
+                ? `${num(report.basket.totalBills)} บิล · สาขา ${report.basket.scope}`
+                : `${num(report.basket.totalBills)} บิล`
+            }
+          />
         </div>
 
         <MonthlyBarChart data={monthlyData} />
@@ -112,6 +121,8 @@ export default function Page() {
           <TopProductsChart data={topData} />
           <BranchChart branches={report.branches} />
         </div>
+
+        <AvgBasket basket={report.basket} />
 
         <MonthExplorer months={report.months} />
       </div>

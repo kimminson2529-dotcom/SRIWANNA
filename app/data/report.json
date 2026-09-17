@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T04:49:12.212Z",
+  "generatedAt": "2026-09-17T06:04:52.167Z",
   "source": "รายงานการขายหน้าร้าน - ตามสินค้า - ตามสาขา (.xls)",
   "note": "ยอดขายเป็นมูลค่ารวมสุทธิ (รวมภาษี หลังหักส่วนลด)",
   "grandValue": 37117903.2,
@@ -39169,5 +39169,85 @@
       "qty": 855,
       "value": 300930
     }
-  ]
+  ],
+  "basket": {
+    "scope": "101 เอเชียทีค1",
+    "totalBills": 6214,
+    "totalValue": 2679099.1,
+    "avgBasket": 431.14,
+    "months": [
+      {
+        "key": "2569-01",
+        "order": 1,
+        "be": 2569,
+        "label": "ม.ค. 2569",
+        "bills": 1101,
+        "billTotal": 445417,
+        "avgBasket": 404.56
+      },
+      {
+        "key": "2569-02",
+        "order": 2,
+        "be": 2569,
+        "label": "ก.พ. 2569",
+        "bills": 884,
+        "billTotal": 432171,
+        "avgBasket": 488.88
+      },
+      {
+        "key": "2569-03",
+        "order": 3,
+        "be": 2569,
+        "label": "มี.ค. 2569",
+        "bills": 922,
+        "billTotal": 408333.05,
+        "avgBasket": 442.88
+      },
+      {
+        "key": "2569-04",
+        "order": 4,
+        "be": 2569,
+        "label": "เม.ย. 2569",
+        "bills": 538,
+        "billTotal": 250602.05,
+        "avgBasket": 465.8
+      },
+      {
+        "key": "2569-05",
+        "order": 5,
+        "be": 2569,
+        "label": "พ.ค. 2569",
+        "bills": 515,
+        "billTotal": 218058,
+        "avgBasket": 423.41
+      },
+      {
+        "key": "2569-06",
+        "order": 6,
+        "be": 2569,
+        "label": "มิ.ย. 2569",
+        "bills": 571,
+        "billTotal": 210625,
+        "avgBasket": 368.87
+      },
+      {
+        "key": "2569-07",
+        "order": 7,
+        "be": 2569,
+        "label": "ก.ค. 2569",
+        "bills": 797,
+        "billTotal": 323574,
+        "avgBasket": 405.99
+      },
+      {
+        "key": "2569-08",
+        "order": 8,
+        "be": 2569,
+        "label": "ส.ค. 2569",
+        "bills": 886,
+        "billTotal": 390319,
+        "avgBasket": 440.54
+      }
+    ]
+  }
 }

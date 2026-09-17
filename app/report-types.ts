@@ -26,6 +26,24 @@ export type ReportMonth = {
   branches: ReportBranch[];
 };
 
+export type BasketMonth = {
+  key: string;
+  order: number;
+  be: number | null;
+  label: string;
+  bills: number;
+  billTotal: number;
+  avgBasket: number;
+};
+
+export type BasketSummary = {
+  scope: string | null;
+  totalBills: number;
+  totalValue: number;
+  avgBasket: number;
+  months: BasketMonth[];
+};
+
 export type SalesReport = {
   generatedAt: string;
   source: string;
@@ -39,4 +57,5 @@ export type SalesReport = {
   topByValue: ReportProduct[];
   topByQty: ReportProduct[];
   branches: ReportBranch[];
+  basket: BasketSummary;
 };

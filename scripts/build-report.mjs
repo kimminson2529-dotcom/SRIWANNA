@@ -216,6 +216,69 @@ function main() {
   const grandValue = round2(months.reduce((s, m) => s + m.totalValue, 0));
   const grandQty = months.reduce((s, m) => s + m.totalQty, 0);
 
+  // ===== AVG Basket Size จากรายงานการขายตามบิล =====
+  const BILL_DIR = path.join(ROOT, "Data", "รายงานการขายตามบิล");
+  const basketMonths = [];
+  let totalBills = 0;
+  let totalBillValue = 0;
+  const basketBranches = new Set();
+  if (fs.existsSync(BILL_DIR)) {
+    const billFiles = fs
+      .readdirSync(BILL_DIR)
+      .filter((f) => f.toLowerCase().endsWith(".xls"));
+    for (const f of billFiles) {
+      const wb = XLSX.read(fs.readFileSync(path.join(BILL_DIR, f)), { type: "buffer" });
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
+        header: 1, raw: true, defval: null,
+      });
+      const { order, ceYear, isRange } = getPeriod(rows);
+      if (isRange) {
+        console.warn(`  ↷ ข้ามไฟล์บิลช่วงหลายเดือน: ${f}`);
+        continue;
+      }
+      const be = ceYear ? ceYear + 543 : null;
+      let bills = 0;
+      let val = 0;
+      for (const r of rows) {
+        if (!Array.isArray(r)) continue;
+        if (typeof r[7] === "string" && r[7].trim() === "รวมทั้งหมด(บิล)") continue;
+        // แถวหัวบิล: ลำดับ(ตัวเลข)@0 + เลขที่เอกสาร(string)@2
+        if (typeof r[0] === "number" && typeof r[2] === "string") {
+          bills++;
+          val += Number(r[22]) || 0; // มูลค่ารวม(บิล) อยู่คอลัมน์ 22 ในรายงานตามบิล
+          const m = r[2].match(/^[A-Za-z]\d{2}(\d{3})/);
+          if (m) basketBranches.add(m[1]);
+        }
+      }
+      basketMonths.push({
+        key: `${be}-${String(order).padStart(2, "0")}`,
+        order,
+        be,
+        label: `${MONTH_LABEL[order] ?? order} ${be}`,
+        bills,
+        billTotal: round2(val),
+        avgBasket: bills ? round2(val / bills) : 0,
+      });
+      totalBills += bills;
+      totalBillValue += val;
+    }
+    basketMonths.sort((a, b) => (a.be - b.be) || (a.order - b.order));
+  }
+  const basketScope =
+    [...basketBranches]
+      .map((c) => {
+        const b = branchOverall.get(c);
+        return b ? `${c} ${b.name}` : c;
+      })
+      .join(", ") || null;
+  const basket = {
+    scope: basketScope,
+    totalBills,
+    totalValue: round2(totalBillValue),
+    avgBasket: totalBills ? round2(totalBillValue / totalBills) : 0,
+    months: basketMonths,
+  };
+
   const out = {
     generatedAt: new Date().toISOString(),
     source: "รายงานการขายหน้าร้าน - ตามสินค้า - ตามสาขา (.xls)",
@@ -229,6 +292,7 @@ function main() {
     topByValue,
     topByQty,
     branches,
+    basket,
   };
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
@@ -240,6 +304,9 @@ function main() {
   );
   console.log(
     `รวม ${grandValue.toLocaleString()}฿ | ${grandQty.toLocaleString()} หน่วย | สินค้า ${overall.size} | สาขา ${branchOverall.size}`,
+  );
+  console.log(
+    `AVG Basket: ${basket.avgBasket.toLocaleString()}฿/บิล | ${basket.totalBills.toLocaleString()} บิล | scope: ${basket.scope}`,
   );
 }
 
