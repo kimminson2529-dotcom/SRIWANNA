@@ -289,38 +289,63 @@ function main() {
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
         header: 1, raw: true, defval: null,
       });
-      const { order, ceYear, isRange, found } = getPeriod(rows);
-      if (!found || isRange) {
-        console.warn(`  ↷ ข้ามไฟล์บิล (ช่วงหลายเดือน/ไม่พบวันที่): ${f}`);
+      const per = getPeriod(rows);
+      if (per.found && per.isRange) {
+        console.warn(`  ↷ ข้ามไฟล์บิลช่วงหลายเดือน: ${f}`);
         continue;
       }
-      const be = ceYear ? ceYear + 543 : null;
-      const mi = mkMonth(order, be);
+      // เดือน: จาก "จาก:" ถ้ามี ไม่งั้นอ่านจากชื่อไฟล์
+      const order = per.found ? per.order : periodFromName(f).order;
+      if (order === 999) {
+        console.warn(`  ↷ ข้ามไฟล์บิล (ระบุเดือนไม่ได้): ${f}`);
+        continue;
+      }
+      // แยกบิลแบบไม่ขึ้นกับ layout: หา docNo อัตโนมัติ, ยอด = ตัวเลขสุดท้ายของแถว, ปี = YY จาก docNo
+      // docNo เช่น R26101001-000006 -> [_, YY=26, branch=101]
+      const DOC_RE = /^[A-Za-z](\d{2})(\d{3})\d{3}/;
+      let fileCeYear = per.found ? per.ceYear : null;
+      const fileBills = [];
       for (const r of rows) {
-        if (!Array.isArray(r)) continue;
-        if (typeof r[7] === "string" && r[7].trim() === "รวมทั้งหมด(บิล)") continue;
-        // แถวหัวบิล: ลำดับ(ตัวเลข)@0 + เลขที่เอกสาร(string)@2
-        if (typeof r[0] === "number" && typeof r[2] === "string") {
-          const val = Number(r[22]) || 0; // มูลค่ารวม(บิล) คอลัมน์ 22
-          const m = r[2].match(/^[A-Za-z]\d{2}(\d{3})/);
-          const code = m ? m[1] : "?";
-          totalBills++;
-          totalBillValue += val;
-          // รวมทั้งหมดรายเดือน
-          const am = billMonthAll.get(mi.key) || { ...mi, bills: 0, value: 0 };
-          am.bills++;
-          am.value += val;
-          billMonthAll.set(mi.key, am);
-          // รายสาขา
-          const br = billBranch.get(code) || { code, bills: 0, value: 0, months: new Map() };
-          br.bills++;
-          br.value += val;
-          const bm = br.months.get(mi.key) || { ...mi, bills: 0, value: 0 };
-          bm.bills++;
-          bm.value += val;
-          br.months.set(mi.key, bm);
-          billBranch.set(code, br);
+        if (!Array.isArray(r) || typeof r[0] !== "number") continue;
+        let doc = null;
+        for (const c of r) {
+          if (typeof c === "string") {
+            const m = c.trim().match(DOC_RE);
+            if (m) {
+              doc = m;
+              break;
+            }
+          }
         }
+        if (!doc) continue;
+        let total = null;
+        for (let i = r.length - 1; i >= 0; i--) {
+          if (typeof r[i] === "number") {
+            total = r[i];
+            break;
+          }
+        }
+        if (total === null) continue;
+        if (!fileCeYear) fileCeYear = 2000 + Number(doc[1]);
+        fileBills.push({ code: doc[2], value: total });
+      }
+      const be = fileCeYear ? fileCeYear + 543 : null;
+      const mi = mkMonth(order, be);
+      for (const bill of fileBills) {
+        totalBills++;
+        totalBillValue += bill.value;
+        const am = billMonthAll.get(mi.key) || { ...mi, bills: 0, value: 0 };
+        am.bills++;
+        am.value += bill.value;
+        billMonthAll.set(mi.key, am);
+        const br = billBranch.get(bill.code) || { code: bill.code, bills: 0, value: 0, months: new Map() };
+        br.bills++;
+        br.value += bill.value;
+        const bm = br.months.get(mi.key) || { ...mi, bills: 0, value: 0 };
+        bm.bills++;
+        bm.value += bill.value;
+        br.months.set(mi.key, bm);
+        billBranch.set(bill.code, br);
       }
     }
   }
