@@ -54,15 +54,38 @@ function Growth({ pct }: { pct: number | null }) {
 }
 
 export default function BranchComparison({ data }: { data: BranchComparisonData }) {
-  const [sel, setSel] = useState("all");
+  const [year, setYear] = useState("all");
+  const [month, setMonth] = useState("all");
+
   const nameOf = useMemo(
     () => Object.fromEntries(data.branches.map((b) => [b.code, b.name])),
     [data.branches],
   );
+  const years = useMemo(
+    () =>
+      [...new Set(data.monthsMeta.map((m) => m.be))]
+        .filter((y): y is number => y !== null)
+        .sort((a, b) => a - b),
+    [data.monthsMeta],
+  );
+  const yearMonths = useMemo(
+    () =>
+      year === "all"
+        ? []
+        : data.monthsMeta
+            .filter((m) => String(m.be) === year)
+            .sort((a, b) => a.order - b.order),
+    [data.monthsMeta, year],
+  );
+
+  const onYear = (y: string) => {
+    setYear(y);
+    setMonth("all");
+  };
 
   const rows: Row[] = useMemo(() => {
-    if (sel === "all") {
-      // ทั้งช่วง: growth = เดือนล่าสุดเทียบเดือนก่อนหน้า
+    // ---- ทุกปี รวมทั้งช่วง ----
+    if (year === "all") {
       const meta = data.monthsMeta;
       const lastKey = meta[meta.length - 1]?.key;
       const prevKey = meta[meta.length - 2]?.key;
@@ -85,33 +108,88 @@ export default function BranchComparison({ data }: { data: BranchComparisonData 
         .sort((a, b) => b.value - a.value);
     }
 
-    // เลือกเดือนเดียว
-    const idx = data.monthsMeta.findIndex((m) => m.key === sel);
-    const meta = data.monthsMeta[idx];
-    if (!meta) return [];
-    const prevKey = data.monthsMeta[idx - 1]?.key;
-    const perBranch = data.monthlyBranch[sel] ?? {};
-    return Object.entries(perBranch)
-      .map(([code, s]) => {
-        const prev = prevKey
-          ? (data.monthlyBranch[prevKey]?.[code]?.value ?? null)
-          : null;
-        const bk = data.basketMB[sel]?.[code];
+    // ---- เลือกเดือนเดียวในปีนั้น ----
+    if (month !== "all") {
+      const idx = data.monthsMeta.findIndex((m) => m.key === month);
+      const meta = data.monthsMeta[idx];
+      if (!meta) return [];
+      const prevKey = data.monthsMeta[idx - 1]?.key;
+      const perBranch = data.monthlyBranch[month] ?? {};
+      return Object.entries(perBranch)
+        .map(([code, s]) => {
+          const prev = prevKey
+            ? (data.monthlyBranch[prevKey]?.[code]?.value ?? null)
+            : null;
+          const bk = data.basketMB[month]?.[code];
+          return {
+            code,
+            name: nameOf[code] ?? code,
+            value: s.value,
+            share: meta.totalValue ? (s.value / meta.totalValue) * 100 : 0,
+            perDay: meta.days ? s.value / meta.days : 0,
+            bills: bk ? bk.bills : null,
+            basket: bk ? bk.avg : null,
+            growth: prev && prev !== 0 ? ((s.value - prev) / prev) * 100 : null,
+          };
+        })
+        .sort((a, b) => b.value - a.value);
+    }
+
+    // ---- ทั้งปีที่เลือก (รวมทุกเดือนในปี) ----
+    const keys = yearMonths.map((m) => m.key);
+    const yearTotal = yearMonths.reduce((s, m) => s + m.totalValue, 0);
+    const yearDays = yearMonths.reduce((s, m) => s + m.days, 0);
+    const prevYear = String(Number(year) - 1);
+    const prevMeta = data.monthsMeta.filter((m) => String(m.be) === prevYear);
+    const overlap = yearMonths
+      .map((m) => m.order)
+      .filter((o) => prevMeta.some((p) => p.order === o));
+
+    const codes = new Set<string>();
+    keys.forEach((k) => Object.keys(data.monthlyBranch[k] ?? {}).forEach((c) => codes.add(c)));
+
+    return [...codes]
+      .map((code) => {
+        let value = 0;
+        let bills = 0;
+        let billVal = 0;
+        for (const k of keys) {
+          value += data.monthlyBranch[k]?.[code]?.value ?? 0;
+          const bk = data.basketMB[k]?.[code];
+          if (bk) {
+            bills += bk.bills;
+            billVal += bk.avg * bk.bills;
+          }
+        }
+        // YoY เฉพาะเดือนที่มีทั้งสองปี
+        let curO = 0;
+        let prevO = 0;
+        for (const o of overlap) {
+          const oo = String(o).padStart(2, "0");
+          curO += data.monthlyBranch[`${year}-${oo}`]?.[code]?.value ?? 0;
+          prevO += data.monthlyBranch[`${prevYear}-${oo}`]?.[code]?.value ?? 0;
+        }
         return {
           code,
           name: nameOf[code] ?? code,
-          value: s.value,
-          share: meta.totalValue ? (s.value / meta.totalValue) * 100 : 0,
-          perDay: meta.days ? s.value / meta.days : 0,
-          bills: bk ? bk.bills : null,
-          basket: bk ? bk.avg : null,
-          growth: prev && prev !== 0 ? ((s.value - prev) / prev) * 100 : null,
+          value,
+          share: yearTotal ? (value / yearTotal) * 100 : 0,
+          perDay: yearDays ? value / yearDays : 0,
+          bills: bills || null,
+          basket: bills ? billVal / bills : null,
+          growth: prevO ? ((curO - prevO) / prevO) * 100 : null,
         };
       })
       .sort((a, b) => b.value - a.value);
-  }, [sel, data, nameOf]);
+  }, [year, month, yearMonths, data, nameOf]);
 
   const maxShare = Math.max(...rows.map((r) => r.share), 1);
+  const growthLabel =
+    year === "all"
+      ? "เดือนล่าสุดเทียบก่อนหน้า"
+      : month === "all"
+        ? "YoY เทียบปีก่อน (เดือนที่มีทั้งสองปี)"
+        : "เทียบเดือนก่อนหน้า";
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -119,22 +197,37 @@ export default function BranchComparison({ data }: { data: BranchComparisonData 
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           จัดอันดับสาขา
         </h2>
-        <select
-          value={sel}
-          onChange={(e) => setSel(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-        >
-          <option value="all">ทั้งช่วง ({data.monthsMeta.length} เดือน)</option>
-          {data.monthsMeta.map((m) => (
-            <option key={m.key} value={m.key}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-wrap gap-2">
+          <select
+            value={year}
+            onChange={(e) => onYear(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          >
+            <option value="all">ทุกปี ({data.monthsMeta.length} เดือน)</option>
+            {years.map((y) => (
+              <option key={y} value={String(y)}>
+                ปี {y}
+              </option>
+            ))}
+          </select>
+          {year !== "all" && (
+            <select
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <option value="all">ทั้งปี {year}</option>
+              {yearMonths.map((m) => (
+                <option key={m.key} value={m.key}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
       <p className="mb-4 text-xs text-slate-400">
-        ยอดขาย · สัดส่วน · เฉลี่ย/วัน · บิล · Basket · Growth
-        {sel === "all" ? " (เดือนล่าสุดเทียบก่อนหน้า)" : " (เทียบเดือนก่อนหน้า)"}
+        ยอดขาย · สัดส่วน · เฉลี่ย/วัน · บิล · Basket · Growth ({growthLabel})
       </p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">

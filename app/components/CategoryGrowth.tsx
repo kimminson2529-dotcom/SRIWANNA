@@ -21,6 +21,8 @@ function GrowthCell({ value }: { value: number | null }) {
   );
 }
 
+const yearOf = (key: string) => key.split("-")[0];
+
 export default function CategoryGrowth({
   categories,
   monthKeys,
@@ -28,7 +30,29 @@ export default function CategoryGrowth({
   categories: Category[];
   monthKeys: MonthKey[];
 }) {
-  const [idx, setIdx] = useState(monthKeys.length - 1);
+  const years = useMemo(
+    () => [...new Set(monthKeys.map((m) => yearOf(m.key)))].sort(),
+    [monthKeys],
+  );
+  const [year, setYear] = useState(years[years.length - 1]);
+  const yearMonths = useMemo(
+    () =>
+      monthKeys
+        .map((m, i) => ({ ...m, i }))
+        .filter((m) => yearOf(m.key) === year),
+    [monthKeys, year],
+  );
+  const [idx, setIdx] = useState(
+    yearMonths[yearMonths.length - 1]?.i ?? monthKeys.length - 1,
+  );
+
+  const onYear = (y: string) => {
+    setYear(y);
+    const ms = monthKeys
+      .map((m, i) => ({ key: m.key, i }))
+      .filter((m) => yearOf(m.key) === y);
+    setIdx(ms[ms.length - 1]?.i ?? 0);
+  };
 
   const rows = useMemo(() => {
     const list = categories.map((c) => {
@@ -51,17 +75,30 @@ export default function CategoryGrowth({
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           การเติบโตรายหมวดสินค้า
         </h2>
-        <select
-          value={idx}
-          onChange={(e) => setIdx(Number(e.target.value))}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-        >
-          {monthKeys.map((m, i) => (
-            <option key={m.key} value={i}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+        <div className="flex gap-2">
+          <select
+            value={year}
+            onChange={(e) => onYear(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                ปี {y}
+              </option>
+            ))}
+          </select>
+          <select
+            value={idx}
+            onChange={(e) => setIdx(Number(e.target.value))}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          >
+            {yearMonths.map((m) => (
+              <option key={m.key} value={m.i}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <p className="mb-4 text-xs text-slate-400">
         หมวดจัดกลุ่มอัตโนมัติจากชื่อสินค้า · MoM = เทียบเดือนก่อนหน้า · ยอดรวมเดือนนี้{" "}

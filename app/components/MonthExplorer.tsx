@@ -18,11 +18,29 @@ export default function MonthExplorer({
   months: ReportMonth[];
   branches: ReportBranch[];
 }) {
+  const years = useMemo(
+    () =>
+      [...new Set(months.map((m) => m.be))]
+        .filter((y): y is number => y !== null)
+        .sort((a, b) => a - b),
+    [months],
+  );
+  const [year, setYear] = useState(String(years[years.length - 1] ?? ""));
   const [key, setKey] = useState(months[months.length - 1]?.key ?? "");
   const [branch, setBranch] = useState("all");
   const [q, setQ] = useState("");
   const [data, setData] = useState<MonthFile | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const yearMonths = useMemo(
+    () => months.filter((m) => String(m.be) === year),
+    [months, year],
+  );
+  const onYear = (y: string) => {
+    setYear(y);
+    const ms = months.filter((m) => String(m.be) === y);
+    setKey(ms[ms.length - 1]?.key ?? "");
+  };
 
   useEffect(() => {
     if (!key) return;
@@ -95,11 +113,22 @@ export default function MonthExplorer({
             ))}
           </select>
           <select
+            value={year}
+            onChange={(e) => onYear(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          >
+            {years.map((y) => (
+              <option key={y} value={String(y)}>
+                ปี {y}
+              </option>
+            ))}
+          </select>
+          <select
             value={key}
             onChange={(e) => setKey(e.target.value)}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
-            {months.map((m) => (
+            {yearMonths.map((m) => (
               <option key={m.key} value={m.key}>
                 {m.label}
               </option>

@@ -35,6 +35,7 @@ export default function Page() {
   const monthlyData = report.months.map((m) => ({
     label: m.label,
     value: m.totalValue,
+    be: m.be,
   }));
   const topData = report.topByValue.slice(0, 10).map((p) => ({
     name: p.name || p.code,

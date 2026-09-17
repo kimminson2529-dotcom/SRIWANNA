@@ -4,6 +4,8 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -14,21 +16,47 @@ import { baht } from "../lib/format";
 const compact = (v: number) =>
   new Intl.NumberFormat("th-TH", { notation: "compact", maximumFractionDigits: 1 }).format(v);
 
+// สีแยกตามปี
+const COLORS: Record<number, string> = { 2568: "#10b981", 2569: "#0ea5e9" };
+const colorFor = (be: number | null) => (be && COLORS[be]) || "#94a3b8";
+
 export default function MonthlyBarChart({
   data,
 }: {
-  data: { label: string; value: number }[];
+  data: { label: string; value: number; be: number | null }[];
 }) {
+  const years = [...new Set(data.map((d) => d.be))].filter(
+    (y): y is number => y !== null,
+  );
+  // ป้ายเดือนแรกของแต่ละปี (ยกเว้นปีแรก) สำหรับเส้นแบ่ง
+  const boundaries: string[] = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i].be !== data[i - 1].be) boundaries.push(data[i].label);
+  }
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <h2 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-100">
-        ยอดขายรายเดือน (บาท)
-      </h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+          ยอดขายรายเดือน (บาท)
+        </h2>
+        <div className="flex gap-4 text-xs text-slate-500 dark:text-slate-400">
+          {years.map((y) => (
+            <span key={y} className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-3 w-3 rounded-sm"
+                style={{ background: colorFor(y) }}
+              />
+              ปี {y}
+            </span>
+          ))}
+        </div>
+      </div>
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.4} />
-            <XAxis dataKey="label" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="#94a3b8" />
             <YAxis
               tick={{ fontSize: 12 }}
               stroke="#94a3b8"
@@ -43,7 +71,20 @@ export default function MonthlyBarChart({
                 fontSize: 13,
               }}
             />
-            <Bar dataKey="value" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={64} />
+            {boundaries.map((b) => (
+              <ReferenceLine
+                key={b}
+                x={b}
+                stroke="#94a3b8"
+                strokeDasharray="4 4"
+                strokeWidth={1.5}
+              />
+            ))}
+            <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={40}>
+              {data.map((d, i) => (
+                <Cell key={i} fill={colorFor(d.be)} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
