@@ -5,6 +5,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -13,44 +14,65 @@ import {
 import type { BasketSummary, BasketMonth } from "../report-types";
 import { baht, num } from "../lib/format";
 
+const yearOf = (key: string) => key.split("-")[0];
+
 export default function AvgBasket({ basket }: { basket: BasketSummary }) {
-  const [sel, setSel] = useState("all");
+  const [sel, setSel] = useState("all"); // branch
+  const allMonths = basket.months;
+  const years = useMemo(
+    () => [...new Set(allMonths.map((m) => yearOf(m.key)))].sort(),
+    [allMonths],
+  );
+  const [year, setYear] = useState(years[years.length - 1] ?? "");
+  const [month, setMonth] = useState("all");
 
-  const view = useMemo(() => {
-    if (sel === "all") {
-      return {
-        months: basket.months,
-        bills: basket.totalBills,
-        value: basket.totalValue,
-        avg: basket.avgBasket,
-        label: "ทุกสาขา",
-      };
-    }
-    const b = basket.branches.find((x) => x.code === sel);
-    return {
-      months: b?.months ?? [],
-      bills: b?.bills ?? 0,
-      value: b?.value ?? 0,
-      avg: b?.avgBasket ?? 0,
-      label: b ? `${b.code} ${b.name}` : sel,
-    };
-  }, [basket, sel]);
+  // เดือนของสาขา/ทุกสาขาที่เลือก
+  const sourceMonths: BasketMonth[] = useMemo(() => {
+    if (sel === "all") return allMonths;
+    return basket.branches.find((b) => b.code === sel)?.months ?? [];
+  }, [basket, sel, allMonths]);
 
-  const data = view.months.map((m: BasketMonth) => ({
-    label: m.label,
+  const yearMonths = useMemo(
+    () => sourceMonths.filter((m) => yearOf(m.key) === year),
+    [sourceMonths, year],
+  );
+
+  const onYear = (y: string) => {
+    setYear(y);
+    setMonth("all");
+  };
+  const onBranch = (b: string) => {
+    setSel(b);
+    setMonth("all");
+  };
+
+  // แถวที่แสดง + ตัวเลขใหญ่
+  const shown =
+    month === "all" ? yearMonths : yearMonths.filter((m) => m.key === month);
+  const sumBills = shown.reduce((s, m) => s + m.bills, 0);
+  const sumValue = shown.reduce((s, m) => s + m.billTotal, 0);
+  const bigAvg = sumBills ? sumValue / sumBills : 0;
+
+  const branchLabel =
+    sel === "all"
+      ? "ทุกสาขา"
+      : `${sel} ${basket.branches.find((b) => b.code === sel)?.name ?? ""}`;
+  const chartData = yearMonths.map((m) => ({
+    label: m.label.replace(` ${year}`, ""),
+    key: m.key,
     avg: m.avgBasket,
   }));
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-          ยอดขายเฉลี่ยต่อบิล (AVG Basket Size)
+          ยอดขายเฉลี่ยต่อบิล (AVG Basket)
         </h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap gap-2">
           <select
             value={sel}
-            onChange={(e) => setSel(e.target.value)}
+            onChange={(e) => onBranch(e.target.value)}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="all">ทุกสาขา</option>
@@ -60,50 +82,75 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
               </option>
             ))}
           </select>
-          <div className="text-right">
-            <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-              {baht(view.avg)}
-            </span>
-            <span className="ml-1 text-sm text-slate-400">/บิล</span>
-          </div>
+          <select
+            value={year}
+            onChange={(e) => onYear(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                ปี {y}
+              </option>
+            ))}
+          </select>
+          <select
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          >
+            <option value="all">ทั้งปี</option>
+            {yearMonths.map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-3 text-sm">
-        <span className="rounded-lg bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          {view.label}
+      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+        <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+          {baht(bigAvg)}
+          <span className="ml-1 text-sm font-normal text-slate-400">/บิล</span>
         </span>
         <span className="rounded-lg bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          {num(view.bills)} บิล
+          {branchLabel}
         </span>
         <span className="rounded-lg bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          ยอดรวม {baht(view.value)}
+          {num(sumBills)} บิล
         </span>
       </div>
 
       {basket.branches.length <= 1 && (
         <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-          ขณะนี้มีข้อมูลรายบิลของสาขา {basket.scope} เท่านั้น — เพิ่มไฟล์รายบิลของสาขาอื่นในโฟลเดอร์
-          Data/รายงานการขายตามบิล เพื่อดูครบทุกสาขา
+          ขณะนี้มีข้อมูลรายบิลบางสาขา/บางเดือนเท่านั้น — เพิ่มไฟล์รายบิลในโฟลเดอร์
+          Data/รายงานการขายตามบิล เพื่อดูครบ
         </p>
       )}
 
-      <div className="h-64 w-full">
+      <div className="h-56 w-full sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+          <BarChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.4} />
-            <XAxis dataKey="label" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="#94a3b8" />
             <YAxis
               tick={{ fontSize: 12 }}
               stroke="#94a3b8"
-              width={48}
+              width={44}
               tickFormatter={(v) => new Intl.NumberFormat("th-TH").format(v)}
             />
             <Tooltip
               formatter={(v) => [baht(Number(v)), "เฉลี่ย/บิล"]}
               contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
             />
-            <Bar dataKey="avg" fill="#f59e0b" radius={[6, 6, 0, 0]} maxBarSize={48} />
+            <Bar dataKey="avg" radius={[6, 6, 0, 0]} maxBarSize={48}>
+              {chartData.map((d) => (
+                <Cell
+                  key={d.key}
+                  fill={month !== "all" && d.key !== month ? "#fcd9a5" : "#f59e0b"}
+                />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -119,8 +166,13 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
             </tr>
           </thead>
           <tbody>
-            {view.months.map((m: BasketMonth) => (
-              <tr key={m.key} className="border-t border-slate-100 dark:border-slate-800">
+            {yearMonths.map((m) => (
+              <tr
+                key={m.key}
+                className={`border-t border-slate-100 dark:border-slate-800 ${
+                  month === m.key ? "bg-amber-50 dark:bg-amber-950/30" : ""
+                }`}
+              >
                 <td className="py-2 text-slate-700 dark:text-slate-200">{m.label}</td>
                 <td className="py-2 text-right text-slate-500 dark:text-slate-400">
                   {num(m.bills)}
@@ -133,12 +185,19 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
                 </td>
               </tr>
             ))}
+            {yearMonths.length === 0 && (
+              <tr>
+                <td colSpan={4} className="py-6 text-center text-slate-400">
+                  ไม่มีข้อมูลบิลในมุมมองนี้
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
       <p className="mt-3 text-xs text-slate-400">
-        AVG Basket Size = ยอดขายรวม ÷ จำนวนบิล (จากรายงานการขายตามบิล)
+        AVG Basket Size = ยอดขายรวม ÷ จำนวนบิล (จากรายงานการขายตามบิล) · แยกตามเดือน
       </p>
     </div>
   );

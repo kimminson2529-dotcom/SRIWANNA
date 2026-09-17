@@ -12,10 +12,18 @@ export const metadata: Metadata = {
   description: "บันทึกและสรุปยอดขายรายวัน พร้อมกราฟภาพรวม",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="th" className={`${notoThai.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-slate-50 font-[family-name:var(--font-noto-thai)] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <html
+      lang="th"
+      className={`${notoThai.variable} h-full overflow-x-hidden antialiased`}
+    >
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-slate-50 font-[family-name:var(--font-noto-thai)] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         {children}
       </body>
     </html>

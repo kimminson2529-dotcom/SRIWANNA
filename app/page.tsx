@@ -21,12 +21,12 @@ const compactBaht = (v: number) =>
 
 function Card({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
       <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-100">
+      <p className="mt-1 break-words text-2xl font-bold text-slate-800 dark:text-slate-100">
         {value}
       </p>
-      {sub && <p className="mt-0.5 text-xs text-slate-400">{sub}</p>}
+      {sub && <p className="mt-0.5 break-words text-xs text-slate-400">{sub}</p>}
     </div>
   );
 }
@@ -155,11 +155,7 @@ export default function Page() {
           <Card
             label="ยอดเฉลี่ยต่อบิล (AVG Basket)"
             value={baht(report.basket.avgBasket)}
-            sub={
-              report.basket.scope
-                ? `${num(report.basket.totalBills)} บิล · สาขา ${report.basket.scope}`
-                : `${num(report.basket.totalBills)} บิล`
-            }
+            sub={`${num(report.basket.totalBills)} บิล · ${report.basket.branches.length} สาขาที่มีบิล`}
           />
         </div>
 
