@@ -1,9 +1,12 @@
+export type BranchStat = { qty: number; value: number };
+
 export type ReportProduct = {
   code: string;
   name: string;
   unit: string;
   qty: number;
   value: number;
+  byBranch?: Record<string, BranchStat>;
 };
 
 export type ReportBranch = {
@@ -36,13 +39,31 @@ export type BasketMonth = {
   avgBasket: number;
 };
 
+export type BasketBranch = {
+  code: string;
+  name: string;
+  bills: number;
+  value: number;
+  avgBasket: number;
+  months: BasketMonth[];
+};
+
 export type BasketSummary = {
   scope: string | null;
   totalBills: number;
   totalValue: number;
   avgBasket: number;
   months: BasketMonth[];
+  branches: BasketBranch[];
 };
+
+export type Category = {
+  name: string;
+  total: number;
+  series: number[]; // เรียงตาม monthKeys
+};
+
+export type MonthKey = { key: string; label: string };
 
 export type SalesReport = {
   generatedAt: string;
@@ -53,9 +74,12 @@ export type SalesReport = {
   monthCount: number;
   productCount: number;
   branchCount: number;
+  periodDays: number;
+  monthKeys: MonthKey[];
   months: ReportMonth[];
   topByValue: ReportProduct[];
   topByQty: ReportProduct[];
   branches: ReportBranch[];
   basket: BasketSummary;
+  categories: Category[];
 };

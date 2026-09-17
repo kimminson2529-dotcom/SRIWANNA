@@ -76,7 +76,7 @@ function parseWorkbook(filePath) {
 
     // แถวหัวสินค้า
     if (typeof c0 === "number" && CODE_RE.test(c3)) {
-      cur = { code: c3, name: c5, unit: "" };
+      cur = { code: c3, name: c5, unit: "", byBranch: {} };
       continue;
     }
     // แถวรวมทั้งรายงาน
@@ -93,6 +93,7 @@ function parseWorkbook(filePath) {
           unit: cur.unit,
           qty: numAt(r, COL.qtySub),
           value: numAt(r, COL.netTotal),
+          byBranch: cur.byBranch,
         });
       }
       continue;
@@ -105,6 +106,12 @@ function parseWorkbook(filePath) {
       const qty = numAt(r, COL.qtyBranch);
       const value = numAt(r, COL.netTotal);
       if (cur && !cur.unit) cur.unit = str(r[COL.unit]);
+      if (cur) {
+        const pb = cur.byBranch[bcode] || { qty: 0, value: 0 };
+        pb.qty += qty;
+        pb.value += value;
+        cur.byBranch[bcode] = pb;
+      }
       const b = branchMap.get(bcode) || { code: bcode, name: bname, qty: 0, value: 0 };
       b.qty += qty;
       b.value += value;
@@ -175,7 +182,16 @@ function main() {
       productCount: products.length,
       branchCount: branches.length,
       products: products
-        .map((p) => ({ ...p, value: round2(p.value) }))
+        .map((p) => ({
+          ...p,
+          value: round2(p.value),
+          byBranch: Object.fromEntries(
+            Object.entries(p.byBranch || {}).map(([c, v]) => [
+              c,
+              { qty: v.qty, value: round2(v.value) },
+            ]),
+          ),
+        }))
         .sort((a, b) => b.value - a.value),
       branches: branches
         .map((b) => ({ ...b, value: round2(b.value) }))
@@ -216,12 +232,18 @@ function main() {
   const grandValue = round2(months.reduce((s, m) => s + m.totalValue, 0));
   const grandQty = months.reduce((s, m) => s + m.totalQty, 0);
 
-  // ===== AVG Basket Size จากรายงานการขายตามบิล =====
+  // ===== AVG Basket Size จากรายงานการขายตามบิล (แยกรายสาขา + รายเดือน) =====
   const BILL_DIR = path.join(ROOT, "Data", "รายงานการขายตามบิล");
-  const basketMonths = [];
+  const mkMonth = (order, be) => ({
+    key: `${be}-${String(order).padStart(2, "0")}`,
+    order,
+    be,
+    label: `${MONTH_LABEL[order] ?? order} ${be}`,
+  });
+  const billMonthAll = new Map(); // monthKey -> {order,be,label,bills,value}
+  const billBranch = new Map(); // code -> {code,bills,value,months:Map}
   let totalBills = 0;
   let totalBillValue = 0;
-  const basketBranches = new Set();
   if (fs.existsSync(BILL_DIR)) {
     const billFiles = fs
       .readdirSync(BILL_DIR)
@@ -237,47 +259,113 @@ function main() {
         continue;
       }
       const be = ceYear ? ceYear + 543 : null;
-      let bills = 0;
-      let val = 0;
+      const mi = mkMonth(order, be);
       for (const r of rows) {
         if (!Array.isArray(r)) continue;
         if (typeof r[7] === "string" && r[7].trim() === "รวมทั้งหมด(บิล)") continue;
         // แถวหัวบิล: ลำดับ(ตัวเลข)@0 + เลขที่เอกสาร(string)@2
         if (typeof r[0] === "number" && typeof r[2] === "string") {
-          bills++;
-          val += Number(r[22]) || 0; // มูลค่ารวม(บิล) อยู่คอลัมน์ 22 ในรายงานตามบิล
+          const val = Number(r[22]) || 0; // มูลค่ารวม(บิล) คอลัมน์ 22
           const m = r[2].match(/^[A-Za-z]\d{2}(\d{3})/);
-          if (m) basketBranches.add(m[1]);
+          const code = m ? m[1] : "?";
+          totalBills++;
+          totalBillValue += val;
+          // รวมทั้งหมดรายเดือน
+          const am = billMonthAll.get(mi.key) || { ...mi, bills: 0, value: 0 };
+          am.bills++;
+          am.value += val;
+          billMonthAll.set(mi.key, am);
+          // รายสาขา
+          const br = billBranch.get(code) || { code, bills: 0, value: 0, months: new Map() };
+          br.bills++;
+          br.value += val;
+          const bm = br.months.get(mi.key) || { ...mi, bills: 0, value: 0 };
+          bm.bills++;
+          bm.value += val;
+          br.months.set(mi.key, bm);
+          billBranch.set(code, br);
         }
       }
-      basketMonths.push({
-        key: `${be}-${String(order).padStart(2, "0")}`,
-        order,
-        be,
-        label: `${MONTH_LABEL[order] ?? order} ${be}`,
-        bills,
-        billTotal: round2(val),
-        avgBasket: bills ? round2(val / bills) : 0,
-      });
-      totalBills += bills;
-      totalBillValue += val;
     }
-    basketMonths.sort((a, b) => (a.be - b.be) || (a.order - b.order));
   }
+  const finishMonths = (map) =>
+    [...map.values()]
+      .sort((a, b) => (a.be - b.be) || (a.order - b.order))
+      .map((m) => ({
+        key: m.key,
+        order: m.order,
+        be: m.be,
+        label: m.label,
+        bills: m.bills,
+        billTotal: round2(m.value),
+        avgBasket: m.bills ? round2(m.value / m.bills) : 0,
+      }));
+
+  const basketMonths = finishMonths(billMonthAll);
+  const basketBranchArr = [...billBranch.values()]
+    .sort((a, b) => b.value - a.value)
+    .map((b) => ({
+      code: b.code,
+      name: branchOverall.get(b.code)?.name || b.code,
+      bills: b.bills,
+      value: round2(b.value),
+      avgBasket: b.bills ? round2(b.value / b.bills) : 0,
+      months: finishMonths(b.months),
+    }));
   const basketScope =
-    [...basketBranches]
-      .map((c) => {
-        const b = branchOverall.get(c);
-        return b ? `${c} ${b.name}` : c;
-      })
-      .join(", ") || null;
+    basketBranchArr.map((b) => `${b.code} ${b.name}`).join(", ") || null;
   const basket = {
     scope: basketScope,
     totalBills,
     totalValue: round2(totalBillValue),
     avgBasket: totalBills ? round2(totalBillValue / totalBills) : 0,
     months: basketMonths,
+    branches: basketBranchArr,
   };
+
+  // ===== การเติบโตรายหมวดสินค้า =====
+  const CATEGORY_RULES = [
+    [/ทุเรียน/, "ทุเรียน"],
+    [/มะม่วง/, "มะม่วง"],
+    [/มะพร้าว/, "มะพร้าว"],
+    [/ทองม้วน/, "ทองม้วน"],
+    [/เยลล/, "เยลลี่"],
+    [/ลูกอม/, "ลูกอม"],
+    [/กาหยี|หิมพานต์|เม็ดมะม่วง/, "เม็ดมะม่วงหิมพานต์"],
+    [/มะขาม/, "มะขาม"],
+    [/น้ำผึ้ง/, "น้ำผึ้ง"],
+    [/สาหร่าย/, "สาหร่าย"],
+    [/สบู่|ยาสีฟัน|ยาหม่อง|ลิป|น้ำมัน|สมุนไพร|ครีม/, "ของใช้/สมุนไพร"],
+  ];
+  const categorize = (name) => {
+    for (const [re, cat] of CATEGORY_RULES) if (re.test(name)) return cat;
+    return "อื่นๆ";
+  };
+  const catMap = new Map(); // cat -> Map(monthKey -> value)
+  for (const m of months) {
+    for (const p of m.products) {
+      const cat = categorize(p.name);
+      const byMonth = catMap.get(cat) || new Map();
+      byMonth.set(m.key, (byMonth.get(m.key) || 0) + p.value);
+      catMap.set(cat, byMonth);
+    }
+  }
+  const monthKeys = months.map((m) => ({ key: m.key, label: m.label }));
+  const categories = [...catMap.entries()]
+    .map(([name, byMonth]) => {
+      const series = monthKeys.map((mk) => round2(byMonth.get(mk.key) || 0));
+      return { name, total: round2(series.reduce((s, v) => s + v, 0)), series };
+    })
+    .sort((a, b) => b.total - a.total);
+
+  // จำนวนวันในช่วงข้อมูล (สำหรับ เฉลี่ย/วัน)
+  const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const isLeap = (y) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const periodDays = months.reduce((s, m) => {
+    const ce = m.be ? m.be - 543 : 2026;
+    const d = m.order === 2 && isLeap(ce) ? 29 : DAYS_IN_MONTH[m.order] || 30;
+    return s + d;
+  }, 0);
 
   const out = {
     generatedAt: new Date().toISOString(),
@@ -288,11 +376,14 @@ function main() {
     monthCount: months.length,
     productCount: overall.size,
     branchCount: branchOverall.size,
+    monthKeys: months.map((m) => ({ key: m.key, label: m.label })),
+    periodDays,
     months,
     topByValue,
     topByQty,
     branches,
     basket,
+    categories,
   };
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
