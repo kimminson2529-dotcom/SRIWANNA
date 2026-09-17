@@ -1,13 +1,11 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import type { Category, MonthKey } from "../report-types";
 import { baht } from "../lib/format";
 
-function pct(a: number, b: number | null) {
-  if (b === null || b === 0) return null;
-  return ((a - b) / b) * 100;
-}
-
 function GrowthCell({ value }: { value: number | null }) {
-  if (value === null) return <span className="text-slate-400">—</span>;
+  if (value === null) return <span className="text-slate-300 dark:text-slate-600">—</span>;
   const up = value > 0;
   const down = value < 0;
   const color = up
@@ -26,66 +24,80 @@ function GrowthCell({ value }: { value: number | null }) {
 export default function CategoryGrowth({
   categories,
   monthKeys,
-  grandValue,
 }: {
   categories: Category[];
   monthKeys: MonthKey[];
-  grandValue: number;
 }) {
-  const lastLabel = monthKeys[monthKeys.length - 1]?.label ?? "";
-  const prevLabel = monthKeys[monthKeys.length - 2]?.label ?? "";
+  const [idx, setIdx] = useState(monthKeys.length - 1);
+
+  const rows = useMemo(() => {
+    const list = categories.map((c) => {
+      const value = c.series[idx] ?? 0;
+      const prev = idx > 0 ? (c.series[idx - 1] ?? 0) : null;
+      const mom = prev && prev !== 0 ? ((value - prev) / prev) * 100 : null;
+      return { name: c.name, value, mom };
+    });
+    const total = list.reduce((s, r) => s + r.value, 0);
+    return list
+      .map((r) => ({ ...r, share: total ? (r.value / total) * 100 : 0 }))
+      .sort((a, b) => b.value - a.value);
+  }, [categories, idx]);
+
+  const monthTotal = rows.reduce((s, r) => s + r.value, 0);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <h2 className="mb-1 text-lg font-semibold text-slate-800 dark:text-slate-100">
-        การเติบโตรายหมวดสินค้า
-      </h2>
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+          การเติบโตรายหมวดสินค้า
+        </h2>
+        <select
+          value={idx}
+          onChange={(e) => setIdx(Number(e.target.value))}
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+        >
+          {monthKeys.map((m, i) => (
+            <option key={m.key} value={i}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+      </div>
       <p className="mb-4 text-xs text-slate-400">
-        หมวดจัดกลุ่มอัตโนมัติจากชื่อสินค้า · MoM = {lastLabel} เทียบ {prevLabel}
+        หมวดจัดกลุ่มอัตโนมัติจากชื่อสินค้า · MoM = เทียบเดือนก่อนหน้า · ยอดรวมเดือนนี้{" "}
+        {baht(monthTotal)}
       </p>
+
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="w-full min-w-[520px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <th className="px-2 py-2 font-medium">หมวด</th>
-              <th className="px-2 py-2 text-right font-medium">ยอดขายรวม</th>
+              <th className="px-2 py-2 text-right font-medium">ยอดขาย</th>
               <th className="px-2 py-2 text-right font-medium">สัดส่วน</th>
-              <th className="px-2 py-2 text-right font-medium">MoM ล่าสุด</th>
-              <th className="px-2 py-2 text-right font-medium">แนวโน้ม (เดือนแรก→ล่าสุด)</th>
+              <th className="px-2 py-2 text-right font-medium">MoM</th>
             </tr>
           </thead>
           <tbody>
-            {categories.map((c) => {
-              const n = c.series.length;
-              const last = c.series[n - 1] ?? 0;
-              const prev = c.series[n - 2] ?? null;
-              const first = c.series[0] ?? null;
-              const mom = pct(last, prev);
-              const trend = pct(last, first);
-              const share = grandValue ? (c.total / grandValue) * 100 : 0;
-              return (
-                <tr
-                  key={c.name}
-                  className="border-b border-slate-100 last:border-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
-                >
-                  <td className="px-2 py-2 text-slate-800 dark:text-slate-100">
-                    {c.name}
-                  </td>
-                  <td className="px-2 py-2 text-right font-medium text-slate-700 dark:text-slate-200">
-                    {baht(c.total)}
-                  </td>
-                  <td className="px-2 py-2 text-right text-slate-500 dark:text-slate-400">
-                    {share.toFixed(1)}%
-                  </td>
-                  <td className="px-2 py-2 text-right">
-                    <GrowthCell value={mom} />
-                  </td>
-                  <td className="px-2 py-2 text-right">
-                    <GrowthCell value={trend} />
-                  </td>
-                </tr>
-              );
-            })}
+            {rows.map((r) => (
+              <tr
+                key={r.name}
+                className="border-b border-slate-100 last:border-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
+              >
+                <td className="px-2 py-2 text-slate-800 dark:text-slate-100">
+                  {r.name}
+                </td>
+                <td className="px-2 py-2 text-right font-medium text-slate-700 dark:text-slate-200">
+                  {baht(r.value)}
+                </td>
+                <td className="px-2 py-2 text-right text-slate-500 dark:text-slate-400">
+                  {r.share.toFixed(1)}%
+                </td>
+                <td className="px-2 py-2 text-right">
+                  <GrowthCell value={r.mom} />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

@@ -3,6 +3,7 @@ import type { SalesReport } from "./report-types";
 import { baht, num } from "./lib/format";
 import MonthlyBarChart from "./components/MonthlyBarChart";
 import MonthlyGrowth from "./components/MonthlyGrowth";
+import YearOverYear from "./components/YearOverYear";
 import TopProductsChart from "./components/TopProductsChart";
 import BranchChart from "./components/BranchChart";
 import BranchComparison, { type BranchRow } from "./components/BranchComparison";
@@ -149,6 +150,8 @@ export default function Page() {
 
         <MonthlyGrowth months={report.months} />
 
+        <YearOverYear months={report.months} />
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <TopProductsChart data={topData} />
           <BranchChart branches={report.branches} />
@@ -159,7 +162,6 @@ export default function Page() {
         <CategoryGrowth
           categories={report.categories}
           monthKeys={report.monthKeys}
-          grandValue={report.grandValue}
         />
 
         <AvgBasket basket={report.basket} />

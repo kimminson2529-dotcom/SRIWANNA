@@ -1,8 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { ReportMonth, ReportBranch } from "../report-types";
+import { useEffect, useMemo, useState } from "react";
+import type { ReportMonth, ReportBranch, ReportProduct } from "../report-types";
 import { baht, num } from "../lib/format";
+
+type MonthFile = {
+  key: string;
+  label: string;
+  totalValue: number;
+  products: ReportProduct[];
+};
 
 export default function MonthExplorer({
   months,
@@ -14,16 +21,32 @@ export default function MonthExplorer({
   const [key, setKey] = useState(months[months.length - 1]?.key ?? "");
   const [branch, setBranch] = useState("all");
   const [q, setQ] = useState("");
+  const [data, setData] = useState<MonthFile | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const month = useMemo(
-    () => months.find((m) => m.key === key) ?? months[0],
-    [months, key],
-  );
+  useEffect(() => {
+    if (!key) return;
+    let alive = true;
+    setLoading(true);
+    fetch(`/monthly/${key}.json`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (alive) setData(json);
+      })
+      .catch(() => {
+        if (alive) setData(null);
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [key]);
 
-  // สินค้าในเดือน (กรองตามสาขาถ้าเลือก) + คำนวณยอดตามสาขา
   const items = useMemo(() => {
-    if (!month) return [];
-    const list = month.products
+    if (!data) return [];
+    return data.products
       .map((p) => {
         if (branch === "all") {
           return { code: p.code, name: p.name, unit: p.unit, qty: p.qty, value: p.value };
@@ -34,8 +57,7 @@ export default function MonthExplorer({
       })
       .filter((x): x is NonNullable<typeof x> => x !== null)
       .sort((a, b) => b.value - a.value);
-    return list;
-  }, [month, branch]);
+  }, [data, branch]);
 
   const totalValue = useMemo(
     () => items.reduce((s, p) => s + p.value, 0),
@@ -52,8 +74,6 @@ export default function MonthExplorer({
         )
       : items;
   }, [items, q]);
-
-  if (!month) return null;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -122,41 +142,49 @@ export default function MonthExplorer({
             </tr>
           </thead>
           <tbody>
-            {rows.map((p, i) => {
-              const pct = totalValue ? (p.value / totalValue) * 100 : 0;
-              return (
-                <tr
-                  key={p.code + i}
-                  className="border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
-                >
-                  <td className="px-3 py-2 text-slate-400">{i + 1}</td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-100">
-                    {p.name}
-                    <span className="ml-1 text-xs text-slate-400">{p.code}</span>
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right text-slate-500 dark:text-slate-400">
-                    {num(p.qty)} {p.unit}
-                  </td>
-                  <td className="px-3 py-2 text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                    {baht(p.value)}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {pct.toFixed(1)}%
-                      </span>
-                      <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700 sm:block">
-                        <span
-                          className="block h-full rounded-full bg-emerald-500"
-                          style={{ width: `${Math.min(pct, 100)}%` }}
-                        />
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {rows.length === 0 && (
+            {loading && (
+              <tr>
+                <td colSpan={5} className="px-3 py-8 text-center text-slate-400">
+                  กำลังโหลด…
+                </td>
+              </tr>
+            )}
+            {!loading &&
+              rows.map((p, i) => {
+                const pct = totalValue ? (p.value / totalValue) * 100 : 0;
+                return (
+                  <tr
+                    key={p.code + i}
+                    className="border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
+                  >
+                    <td className="px-3 py-2 text-slate-400">{i + 1}</td>
+                    <td className="px-3 py-2 text-slate-800 dark:text-slate-100">
+                      {p.name}
+                      <span className="ml-1 text-xs text-slate-400">{p.code}</span>
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-right text-slate-500 dark:text-slate-400">
+                      {num(p.qty)} {p.unit}
+                    </td>
+                    <td className="px-3 py-2 text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                      {baht(p.value)}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {pct.toFixed(1)}%
+                        </span>
+                        <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700 sm:block">
+                          <span
+                            className="block h-full rounded-full bg-emerald-500"
+                            style={{ width: `${Math.min(pct, 100)}%` }}
+                          />
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            {!loading && rows.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-3 py-8 text-center text-slate-400">
                   ไม่พบสินค้า

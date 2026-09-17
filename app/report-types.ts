@@ -25,7 +25,7 @@ export type ReportMonth = {
   totalValue: number;
   productCount: number;
   branchCount: number;
-  products: ReportProduct[];
+  products?: ReportProduct[];
   branches: ReportBranch[];
 };
 

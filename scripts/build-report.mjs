@@ -31,26 +31,50 @@ const CODE_RE = /^[A-Za-z]\d{1,2}-\w+/;
 const numAt = (r, i) => (typeof r[i] === "number" ? r[i] : 0);
 const str = (v) => (typeof v === "string" ? v.trim() : "");
 
+const THAI_MONTHS = {
+  มกราคม: 1, กุมภาพันธ: 2, มีนาคม: 3, เมษายน: 4, พฤษภาคม: 5, มิถุนายน: 6,
+  กรกฎาคม: 7, กรกฏาคม: 7, สิงหาคม: 8, กันยายน: 9, ตุลาคม: 10,
+  พฤศจิกายน: 11, ธันวาคม: 12,
+};
+
+// อ่านเดือน/ปีจากชื่อไฟล์ (fallback เมื่อไม่พบ "จาก:")
+function periodFromName(name) {
+  let order = 999;
+  let ceYear = null;
+  for (const [th, m] of Object.entries(THAI_MONTHS)) {
+    if (name.includes(th) || name.includes(th.slice(0, 4))) {
+      order = m;
+      break;
+    }
+  }
+  const y = name.match(/(25\d{2})/); // ปี พ.ศ. ในชื่อไฟล์
+  if (y) ceYear = Number(y[1]) - 543;
+  return { order, ceYear, isRange: false };
+}
+
 function getPeriod(rows) {
-  for (const r of rows.slice(0, 12)) {
+  for (const r of rows.slice(0, 25)) {
     for (const c of r || []) {
       if (typeof c === "string" && c.includes("จาก:")) {
         const dates = [...c.matchAll(/(\d{2})\/(\d{2})\/(\d{4})/g)];
         if (dates.length) {
-          const start = dates[0];
-          const end = dates[1] || dates[0];
-          const isRange =
-            start[2] !== end[2] || start[3] !== end[3]; // เดือน/ปี ไม่ตรงกัน = ช่วงหลายเดือน
+          const s = dates[0];
+          const e = dates[1] || dates[0];
+          const t0 = Date.UTC(+s[3], +s[2] - 1, +s[1]);
+          const t1 = Date.UTC(+e[3], +e[2] - 1, +e[1]);
+          const diffDays = (t1 - t0) / 86400000;
+          // ช่วงหลายเดือน = ครอบคลุมเกิน ~45 วัน (ไฟล์เดือนเดียวจะ ~28-31 วัน)
           return {
-            order: Number(start[2]),
-            ceYear: Number(start[3]),
-            isRange,
+            found: true,
+            order: Number(s[2]),
+            ceYear: Number(s[3]),
+            isRange: diffDays > 45,
           };
         }
       }
     }
   }
-  return { order: 999, ceYear: null, isRange: false };
+  return { found: false, order: 999, ceYear: null, isRange: false };
 }
 
 function parseWorkbook(filePath) {
@@ -128,14 +152,21 @@ function parseWorkbook(filePath) {
 
 const round2 = (n) => Math.round(n * 100) / 100;
 
+// รวมไฟล์ .xls ทั้งหมด รวมถึงในโฟลเดอร์ย่อย (เช่น แยกรายปี 2568/2569)
+function listXls(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir, { recursive: true })
+    .map((f) => String(f))
+    .filter((f) => f.toLowerCase().endsWith(".xls"));
+}
+
 function main() {
   if (!fs.existsSync(DATA_DIR)) {
     console.error("ไม่พบโฟลเดอร์ข้อมูล:", DATA_DIR);
     process.exit(1);
   }
-  const files = fs
-    .readdirSync(DATA_DIR)
-    .filter((f) => f.toLowerCase().endsWith(".xls"));
+  const files = listXls(DATA_DIR);
 
   const months = [];
   const overall = new Map();
@@ -147,7 +178,14 @@ function main() {
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
       header: 1, raw: true, defval: null,
     });
-    const { order, ceYear, isRange } = getPeriod(rows);
+    const per = getPeriod(rows);
+    // ไฟล์ไม่มีช่วงวันที่ที่อ่านได้ = ตรวจสอบเดือนไม่ได้/ไฟล์ผิดปกติ -> ข้าม
+    if (!per.found) {
+      console.warn(`  ↷ ข้ามไฟล์ (ไม่พบช่วงวันที่ในรายงาน): ${f}`);
+      skipped.push(f);
+      continue;
+    }
+    const { order, ceYear, isRange } = per;
     const be = ceYear ? ceYear + 543 : null;
 
     // ข้ามไฟล์ที่เป็นช่วงหลายเดือน (กันนับซ้ำกับไฟล์รายเดือน)
@@ -245,17 +283,15 @@ function main() {
   let totalBills = 0;
   let totalBillValue = 0;
   if (fs.existsSync(BILL_DIR)) {
-    const billFiles = fs
-      .readdirSync(BILL_DIR)
-      .filter((f) => f.toLowerCase().endsWith(".xls"));
+    const billFiles = listXls(BILL_DIR);
     for (const f of billFiles) {
       const wb = XLSX.read(fs.readFileSync(path.join(BILL_DIR, f)), { type: "buffer" });
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
         header: 1, raw: true, defval: null,
       });
-      const { order, ceYear, isRange } = getPeriod(rows);
-      if (isRange) {
-        console.warn(`  ↷ ข้ามไฟล์บิลช่วงหลายเดือน: ${f}`);
+      const { order, ceYear, isRange, found } = getPeriod(rows);
+      if (!found || isRange) {
+        console.warn(`  ↷ ข้ามไฟล์บิล (ช่วงหลายเดือน/ไม่พบวันที่): ${f}`);
         continue;
       }
       const be = ceYear ? ceYear + 543 : null;
@@ -378,7 +414,18 @@ function main() {
     branchCount: branchOverall.size,
     monthKeys: months.map((m) => ({ key: m.key, label: m.label })),
     periodDays,
-    months,
+    // months แบบ slim (ไม่มีรายละเอียดสินค้า/สาขา เพื่อลดขนาด) — รายละเอียดอยู่ใน public/monthly/<key>.json
+    months: months.map((m) => ({
+      key: m.key,
+      order: m.order,
+      be: m.be,
+      label: m.label,
+      totalQty: m.totalQty,
+      totalValue: m.totalValue,
+      productCount: m.productCount,
+      branchCount: m.branchCount,
+      branches: m.branches,
+    })),
     topByValue,
     topByQty,
     branches,
@@ -386,9 +433,27 @@ function main() {
     categories,
   };
 
+  // เขียนไฟล์รายเดือน (รายละเอียดสินค้า + แยกสาขา) ไว้ที่ public/monthly เพื่อโหลดเมื่อเลือก
+  const MONTH_DIR = path.join(ROOT, "public", "monthly");
+  fs.mkdirSync(MONTH_DIR, { recursive: true });
+  for (const old of fs.readdirSync(MONTH_DIR)) {
+    if (old.endsWith(".json")) fs.unlinkSync(path.join(MONTH_DIR, old));
+  }
+  for (const m of months) {
+    fs.writeFileSync(
+      path.join(MONTH_DIR, `${m.key}.json`),
+      JSON.stringify({
+        key: m.key,
+        label: m.label,
+        totalValue: m.totalValue,
+        products: m.products,
+      }),
+    );
+  }
+
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, JSON.stringify(out, null, 2), "utf8");
-  console.log("เขียน", OUT);
+  console.log("เขียน", OUT, "+ public/monthly/*.json");
   console.log(
     "เดือน:",
     months.map((m) => `${m.label}=${m.totalValue.toLocaleString()}฿`).join("  "),
