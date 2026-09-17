@@ -6,7 +6,9 @@ import MonthlyGrowth from "./components/MonthlyGrowth";
 import YearOverYear from "./components/YearOverYear";
 import TopProductsChart from "./components/TopProductsChart";
 import BranchChart from "./components/BranchChart";
-import BranchComparison, { type BranchRow } from "./components/BranchComparison";
+import BranchComparison, {
+  type BranchComparisonData,
+} from "./components/BranchComparison";
 import CategoryGrowth from "./components/CategoryGrowth";
 import AvgBasket from "./components/AvgBasket";
 import MonthExplorer from "./components/MonthExplorer";
@@ -43,35 +45,49 @@ export default function Page() {
   const avgPerMonth = report.monthCount ? report.grandValue / report.monthCount : 0;
   const salesPerBranch = report.branchCount ? report.grandValue / report.branchCount : 0;
 
-  // ===== จัดอันดับสาขา =====
-  const branchSeries = new Map<string, number[]>();
-  report.months.forEach((m, i) => {
+  // ===== ข้อมูลจัดอันดับสาขา (รองรับเลือกเดือน) =====
+  const DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const isLeap = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const daysIn = (order: number, be: number | null) => {
+    const ce = be ? be - 543 : 2026;
+    return order === 2 && isLeap(ce) ? 29 : DAYS[order] || 30;
+  };
+
+  const monthlyBranch: Record<string, Record<string, { value: number; qty: number }>> = {};
+  report.months.forEach((m) => {
+    monthlyBranch[m.key] = {};
     m.branches.forEach((b) => {
-      const arr =
-        branchSeries.get(b.code) ?? new Array(report.months.length).fill(0);
-      arr[i] = b.value;
-      branchSeries.set(b.code, arr);
+      monthlyBranch[m.key][b.code] = { value: b.value, qty: b.qty };
     });
   });
-  const basketByCode = new Map(report.basket.branches.map((b) => [b.code, b]));
-  const branchRows: BranchRow[] = [...report.branches]
-    .map((b) => {
-      const series = branchSeries.get(b.code) ?? [];
-      const last = series[series.length - 1] ?? 0;
-      const prev = series[series.length - 2] ?? 0;
-      const bk = basketByCode.get(b.code);
-      return {
-        code: b.code,
-        name: b.name,
-        value: b.value,
-        share: report.grandValue ? (b.value / report.grandValue) * 100 : 0,
-        perDay: report.periodDays ? b.value / report.periodDays : 0,
-        bills: bk ? bk.bills : null,
-        basket: bk ? bk.avgBasket : null,
-        growth: prev ? ((last - prev) / prev) * 100 : null,
-      };
-    })
-    .sort((a, b) => b.value - a.value);
+  const basketMB: Record<string, Record<string, { bills: number; avg: number }>> = {};
+  const basketAll: Record<string, { bills: number; avg: number }> = {};
+  report.basket.branches.forEach((b) => {
+    basketAll[b.code] = { bills: b.bills, avg: b.avgBasket };
+    b.months.forEach((mm) => {
+      (basketMB[mm.key] ??= {})[b.code] = { bills: mm.bills, avg: mm.avgBasket };
+    });
+  });
+  const branchData: BranchComparisonData = {
+    branches: report.branches.map((b) => ({
+      code: b.code,
+      name: b.name,
+      value: b.value,
+    })),
+    monthsMeta: report.months.map((m) => ({
+      key: m.key,
+      label: m.label,
+      order: m.order,
+      be: m.be,
+      days: daysIn(m.order, m.be),
+      totalValue: m.totalValue,
+    })),
+    monthlyBranch,
+    basketMB,
+    basketAll,
+    periodDays: report.periodDays,
+    grandValue: report.grandValue,
+  };
 
   const lastM = report.months[report.months.length - 1];
   const prevM = report.months[report.months.length - 2];
@@ -157,7 +173,7 @@ export default function Page() {
           <BranchChart branches={report.branches} />
         </div>
 
-        <BranchComparison rows={branchRows} />
+        <BranchComparison data={branchData} />
 
         <CategoryGrowth
           categories={report.categories}
