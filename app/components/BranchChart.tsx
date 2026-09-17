@@ -18,7 +18,7 @@ const compact = (v: number) =>
 export default function BranchChart({ branches }: { branches: ReportBranch[] }) {
   const data = branches.map((b) => ({ name: b.name || b.code, value: b.value, qty: b.qty }));
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
       <h2 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-100">
         ยอดขายตามสาขา
       </h2>
@@ -52,11 +52,13 @@ export default function BranchChart({ branches }: { branches: ReportBranch[] }) 
         </ResponsiveContainer>
       </div>
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[440px] text-sm">
+        <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-slate-500 dark:text-slate-400">
               <th className="py-2 font-medium">สาขา</th>
-              <th className="py-2 text-right font-medium">จำนวน</th>
+              <th className="hidden py-2 text-right font-medium sm:table-cell">
+                จำนวน
+              </th>
               <th className="py-2 text-right font-medium">ยอดขาย</th>
             </tr>
           </thead>
@@ -66,7 +68,7 @@ export default function BranchChart({ branches }: { branches: ReportBranch[] }) 
                 <td className="py-2 text-slate-700 dark:text-slate-200">
                   <span className="text-slate-400">{b.code}</span> {b.name}
                 </td>
-                <td className="py-2 text-right text-slate-500 dark:text-slate-400">
+                <td className="hidden py-2 text-right text-slate-500 dark:text-slate-400 sm:table-cell">
                   {num(b.qty)}
                 </td>
                 <td className="py-2 text-right font-semibold text-[#8e1538] dark:text-[#e6b3c1]">

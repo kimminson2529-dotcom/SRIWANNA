@@ -192,7 +192,7 @@ export default function BranchComparison({ data }: { data: BranchComparisonData 
         : "เทียบเดือนก่อนหน้า";
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           จัดอันดับสาขา
@@ -229,7 +229,44 @@ export default function BranchComparison({ data }: { data: BranchComparisonData 
       <p className="mb-4 text-xs text-slate-400">
         ยอดขาย · สัดส่วน · เฉลี่ย/วัน · บิล · Basket · Growth ({growthLabel})
       </p>
-      <div className="overflow-x-auto">
+      {/* มือถือ: การ์ดต่อสาขา */}
+      <div className="space-y-2 md:hidden">
+        {rows.map((r, i) => (
+          <div
+            key={r.code}
+            className="rounded-xl border border-slate-100 p-3 dark:border-slate-800"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <span className="text-xs text-slate-400">#{i + 1}</span>{" "}
+                <span className="font-medium text-slate-800 dark:text-slate-100">
+                  {r.name}
+                </span>{" "}
+                <span className="text-xs text-slate-400">{r.code}</span>
+              </div>
+              <span className="shrink-0 font-semibold text-[#8e1538] dark:text-[#e6b3c1]">
+                {baht(r.value)}
+              </span>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+              <span>สัดส่วน {r.share.toFixed(1)}%</span>
+              <span className="text-right">
+                Growth <Growth pct={r.growth} />
+              </span>
+              <span>เฉลี่ย/วัน {baht(r.perDay)}</span>
+              <span className="text-right">
+                บิล {r.bills === null ? "—" : num(r.bills)}
+              </span>
+              <span>
+                Basket {r.basket === null ? "—" : baht(r.basket)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* จอใหญ่: ตาราง */}
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500 dark:border-slate-800 dark:text-slate-400">

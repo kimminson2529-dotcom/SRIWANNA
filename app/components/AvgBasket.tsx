@@ -156,12 +156,14 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[440px] text-sm">
+        <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-slate-500 dark:text-slate-400">
               <th className="py-2 font-medium">เดือน</th>
               <th className="py-2 text-right font-medium">จำนวนบิล</th>
-              <th className="py-2 text-right font-medium">ยอดขาย</th>
+              <th className="hidden py-2 text-right font-medium sm:table-cell">
+                ยอดขาย
+              </th>
               <th className="py-2 text-right font-medium">เฉลี่ย/บิล</th>
             </tr>
           </thead>
@@ -177,7 +179,7 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
                 <td className="py-2 text-right text-slate-500 dark:text-slate-400">
                   {num(m.bills)}
                 </td>
-                <td className="py-2 text-right text-slate-500 dark:text-slate-400">
+                <td className="hidden py-2 text-right text-slate-500 dark:text-slate-400 sm:table-cell">
                   {baht(m.billTotal)}
                 </td>
                 <td className="py-2 text-right font-semibold text-amber-600 dark:text-amber-400">

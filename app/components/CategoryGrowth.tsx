@@ -70,7 +70,7 @@ export default function CategoryGrowth({
   const monthTotal = rows.reduce((s, r) => s + r.value, 0);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           การเติบโตรายหมวดสินค้า
@@ -106,12 +106,14 @@ export default function CategoryGrowth({
       </p>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <th className="px-2 py-2 font-medium">หมวด</th>
               <th className="px-2 py-2 text-right font-medium">ยอดขาย</th>
-              <th className="px-2 py-2 text-right font-medium">สัดส่วน</th>
+              <th className="hidden px-2 py-2 text-right font-medium sm:table-cell">
+                สัดส่วน
+              </th>
               <th className="px-2 py-2 text-right font-medium">MoM</th>
             </tr>
           </thead>
@@ -127,7 +129,7 @@ export default function CategoryGrowth({
                 <td className="px-2 py-2 text-right font-medium text-slate-700 dark:text-slate-200">
                   {baht(r.value)}
                 </td>
-                <td className="px-2 py-2 text-right text-slate-500 dark:text-slate-400">
+                <td className="hidden px-2 py-2 text-right text-slate-500 dark:text-slate-400 sm:table-cell">
                   {r.share.toFixed(1)}%
                 </td>
                 <td className="px-2 py-2 text-right">

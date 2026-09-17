@@ -35,7 +35,7 @@ export default function MonthlyGrowth({ months }: { months: ReportMonth[] }) {
   }, [months, year]);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           การเติบโตเทียบเดือนก่อนหน้า (MoM)
@@ -54,12 +54,14 @@ export default function MonthlyGrowth({ months }: { months: ReportMonth[] }) {
         </select>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[440px] text-sm">
+        <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-slate-500 dark:text-slate-400">
               <th className="py-2 font-medium">เดือน</th>
               <th className="py-2 text-right font-medium">ยอดขาย</th>
-              <th className="py-2 text-right font-medium">เปลี่ยนแปลง</th>
+              <th className="hidden py-2 text-right font-medium sm:table-cell">
+                เปลี่ยนแปลง
+              </th>
               <th className="py-2 text-right font-medium">%</th>
             </tr>
           </thead>
@@ -84,7 +86,7 @@ export default function MonthlyGrowth({ months }: { months: ReportMonth[] }) {
                   <td className="py-2 text-right font-medium text-slate-800 dark:text-slate-100">
                     {baht(r.value)}
                   </td>
-                  <td className={`py-2 text-right ${color}`}>
+                  <td className={`hidden py-2 text-right sm:table-cell ${color}`}>
                     {r.diff === null
                       ? "—"
                       : (r.diff > 0 ? "+" : "") + baht(r.diff)}

@@ -38,7 +38,7 @@ export default function YearOverYear({ months }: { months: ReportMonth[] }) {
 
   if (!prevYear || !curYear) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           การเติบโตเทียบปี (YoY)
         </h2>
@@ -66,7 +66,7 @@ export default function YearOverYear({ months }: { months: ReportMonth[] }) {
   const totalYoY = sumPrev ? ((sumCur - sumPrev) / sumPrev) * 100 : null;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
       <h2 className="mb-1 text-lg font-semibold text-slate-800 dark:text-slate-100">
         การเติบโตเทียบปี (YoY)
       </h2>
@@ -86,11 +86,13 @@ export default function YearOverYear({ months }: { months: ReportMonth[] }) {
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <th className="px-2 py-2 font-medium">เดือน</th>
-              <th className="px-2 py-2 text-right font-medium">{prevYear}</th>
+              <th className="hidden px-2 py-2 text-right font-medium sm:table-cell">
+                {prevYear}
+              </th>
               <th className="px-2 py-2 text-right font-medium">{curYear}</th>
               <th className="px-2 py-2 text-right font-medium">YoY</th>
             </tr>
@@ -104,7 +106,7 @@ export default function YearOverYear({ months }: { months: ReportMonth[] }) {
                 <td className="px-2 py-2 text-slate-700 dark:text-slate-200">
                   {MONTH_LABEL[r.order]}
                 </td>
-                <td className="px-2 py-2 text-right text-slate-500 dark:text-slate-400">
+                <td className="hidden px-2 py-2 text-right text-slate-500 dark:text-slate-400 sm:table-cell">
                   {r.p === null ? (
                     <span className="text-slate-300 dark:text-slate-600">—</span>
                   ) : (

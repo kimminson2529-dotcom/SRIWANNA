@@ -37,7 +37,7 @@ export default function SaleForm() {
     <form
       ref={formRef}
       onSubmit={onSubmit}
-      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900"
     >
       <h2 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-100">
         บันทึกยอดขาย

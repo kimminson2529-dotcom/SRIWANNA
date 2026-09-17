@@ -94,7 +94,7 @@ export default function MonthExplorer({
   }, [items, q]);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           รายละเอียดรายเดือน
@@ -159,7 +159,44 @@ export default function MonthExplorer({
         className="mb-4 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
       />
 
-      <div className="max-h-[28rem] overflow-auto rounded-xl border border-slate-100 dark:border-slate-800">
+      {/* มือถือ: รายการสินค้าแบบการ์ด */}
+      <div className="max-h-[28rem] space-y-2 overflow-y-auto rounded-xl border border-slate-100 p-2 dark:border-slate-800 sm:hidden">
+        {loading && (
+          <p className="py-8 text-center text-slate-400">กำลังโหลด…</p>
+        )}
+        {!loading &&
+          rows.map((p, i) => {
+            const pct = totalValue ? (p.value / totalValue) * 100 : 0;
+            return (
+              <div
+                key={p.code + i}
+                className="rounded-lg border border-slate-100 p-2.5 dark:border-slate-800"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="min-w-0 text-slate-800 dark:text-slate-100">
+                    <span className="text-slate-400">{i + 1}.</span> {p.name}{" "}
+                    <span className="text-xs text-slate-400">{p.code}</span>
+                  </span>
+                  <span className="shrink-0 font-semibold text-[#8e1538] dark:text-[#e6b3c1]">
+                    {baht(p.value)}
+                  </span>
+                </div>
+                <div className="mt-1 flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <span>
+                    {num(p.qty)} {p.unit}
+                  </span>
+                  <span>สัดส่วน {pct.toFixed(1)}%</span>
+                </div>
+              </div>
+            );
+          })}
+        {!loading && rows.length === 0 && (
+          <p className="py-8 text-center text-slate-400">ไม่พบสินค้า</p>
+        )}
+      </div>
+
+      {/* จอใหญ่: ตาราง */}
+      <div className="hidden max-h-[28rem] overflow-auto rounded-xl border border-slate-100 dark:border-slate-800 sm:block">
         <table className="w-full min-w-[480px] text-sm">
           <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800">
             <tr className="text-left text-slate-500 dark:text-slate-400">
