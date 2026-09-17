@@ -102,7 +102,7 @@ export default function Page() {
       : `${lastGrowth > 0 ? "▲ +" : lastGrowth < 0 ? "▼ " : ""}${lastGrowth.toFixed(1)}%`;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <main className="mx-auto w-full min-w-0 max-w-5xl px-4 py-8 sm:px-6">
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
