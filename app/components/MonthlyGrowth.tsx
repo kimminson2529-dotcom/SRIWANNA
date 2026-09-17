@@ -43,7 +43,7 @@ export default function MonthlyGrowth({ months }: { months: ReportMonth[] }) {
         <select
           value={year}
           onChange={(e) => setYear(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         >
           <option value="all">ทุกปี</option>
           {years.map((y) => (
@@ -54,7 +54,7 @@ export default function MonthlyGrowth({ months }: { months: ReportMonth[] }) {
         </select>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[440px] text-sm">
           <thead>
             <tr className="text-left text-slate-500 dark:text-slate-400">
               <th className="py-2 font-medium">เดือน</th>
@@ -68,7 +68,7 @@ export default function MonthlyGrowth({ months }: { months: ReportMonth[] }) {
               const up = (r.pct ?? 0) > 0;
               const down = (r.pct ?? 0) < 0;
               const color = up
-                ? "text-emerald-600 dark:text-emerald-400"
+                ? "text-[#8e1538] dark:text-[#e6b3c1]"
                 : down
                   ? "text-red-500 dark:text-red-400"
                   : "text-slate-400";

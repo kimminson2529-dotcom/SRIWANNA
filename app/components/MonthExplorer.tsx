@@ -103,7 +103,7 @@ export default function MonthExplorer({
           <select
             value={branch}
             onChange={(e) => setBranch(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="all">ทุกสาขา</option>
             {branches.map((b) => (
@@ -115,7 +115,7 @@ export default function MonthExplorer({
           <select
             value={year}
             onChange={(e) => onYear(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {years.map((y) => (
               <option key={y} value={String(y)}>
@@ -126,7 +126,7 @@ export default function MonthExplorer({
           <select
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {yearMonths.map((m) => (
               <option key={m.key} value={m.key}>
@@ -138,7 +138,7 @@ export default function MonthExplorer({
       </div>
 
       <div className="mb-4 flex flex-wrap gap-3 text-sm">
-        <span className="rounded-lg bg-emerald-50 px-3 py-1 font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <span className="rounded-lg bg-[#f6eeda] px-3 py-1 font-medium text-[#7a1030] dark:bg-[#7a1030]/30 dark:text-[#e7c56b]">
           ยอดขาย {baht(totalValue)}
         </span>
         <span className="rounded-lg bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -156,11 +156,11 @@ export default function MonthExplorer({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="ค้นหาสินค้า / รหัส…"
-        className="mb-4 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+        className="mb-4 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
       />
 
-      <div className="max-h-[28rem] overflow-y-auto rounded-xl border border-slate-100 dark:border-slate-800">
-        <table className="w-full text-sm">
+      <div className="max-h-[28rem] overflow-auto rounded-xl border border-slate-100 dark:border-slate-800">
+        <table className="w-full min-w-[480px] text-sm">
           <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800">
             <tr className="text-left text-slate-500 dark:text-slate-400">
               <th className="px-3 py-2 font-medium">#</th>
@@ -194,7 +194,7 @@ export default function MonthExplorer({
                     <td className="whitespace-nowrap px-3 py-2 text-right text-slate-500 dark:text-slate-400">
                       {num(p.qty)} {p.unit}
                     </td>
-                    <td className="px-3 py-2 text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                    <td className="px-3 py-2 text-right font-semibold text-[#8e1538] dark:text-[#e6b3c1]">
                       {baht(p.value)}
                     </td>
                     <td className="px-3 py-2 text-right">
@@ -204,7 +204,7 @@ export default function MonthExplorer({
                         </span>
                         <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700 sm:block">
                           <span
-                            className="block h-full rounded-full bg-emerald-500"
+                            className="block h-full rounded-full bg-[#c9a227]"
                             style={{ width: `${Math.min(pct, 100)}%` }}
                           />
                         </span>

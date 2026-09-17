@@ -37,7 +37,7 @@ export default function SummaryCards({
       <Card
         label="ยอดขายรวม"
         value={baht(totalRevenue)}
-        accent="text-emerald-600 dark:text-emerald-400"
+        accent="text-[#8e1538] dark:text-[#e6b3c1]"
       />
       <Card label="ยอดขายวันนี้" value={baht(todayRevenue)} />
       <Card label="จำนวนสินค้าที่ขาย" value={num(totalQty) + " ชิ้น"} />

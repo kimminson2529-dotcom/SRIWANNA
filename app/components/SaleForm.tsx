@@ -51,7 +51,7 @@ export default function SaleForm() {
             name="sale_date"
             required
             defaultValue={todayISO()}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-[#b8860b] focus:ring-2 focus:ring-[#ecdfae] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </label>
 
@@ -62,7 +62,7 @@ export default function SaleForm() {
             name="product"
             required
             placeholder="เช่น ข้าวหอมมะลิ 5 กก."
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-[#b8860b] focus:ring-2 focus:ring-[#ecdfae] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </label>
 
@@ -77,7 +77,7 @@ export default function SaleForm() {
             value={qty}
             onChange={(e) => setQty(e.target.value)}
             placeholder="0"
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-[#b8860b] focus:ring-2 focus:ring-[#ecdfae] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </label>
 
@@ -94,7 +94,7 @@ export default function SaleForm() {
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="0.00"
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-[#b8860b] focus:ring-2 focus:ring-[#ecdfae] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </label>
 
@@ -106,7 +106,7 @@ export default function SaleForm() {
             type="text"
             name="note"
             placeholder="เช่น ลูกค้าประจำ / ช่องทางขาย"
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-[#b8860b] focus:ring-2 focus:ring-[#ecdfae] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </label>
       </div>
@@ -114,14 +114,14 @@ export default function SaleForm() {
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-600 dark:text-slate-300">
           ยอดรวม:{" "}
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+          <span className="font-semibold text-[#8e1538] dark:text-[#e6b3c1]">
             {baht(preview)}
           </span>
         </p>
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-emerald-600 px-5 py-2 font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-[#7a1030] px-5 py-2 font-medium text-white transition hover:bg-[#5f0c26] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "กำลังบันทึก..." : "บันทึก"}
         </button>
@@ -133,7 +133,7 @@ export default function SaleForm() {
         </p>
       )}
       {ok && (
-        <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+        <p className="mt-3 rounded-lg bg-[#f6eeda] px-3 py-2 text-sm text-[#7a1030] dark:bg-[#7a1030]/30 dark:text-[#e6b3c1]">
           บันทึกเรียบร้อยแล้ว ✓
         </p>
       )}

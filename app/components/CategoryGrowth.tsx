@@ -9,7 +9,7 @@ function GrowthCell({ value }: { value: number | null }) {
   const up = value > 0;
   const down = value < 0;
   const color = up
-    ? "text-emerald-600 dark:text-emerald-400"
+    ? "text-[#8e1538] dark:text-[#e6b3c1]"
     : down
       ? "text-red-500 dark:text-red-400"
       : "text-slate-400";
@@ -79,7 +79,7 @@ export default function CategoryGrowth({
           <select
             value={year}
             onChange={(e) => onYear(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {years.map((y) => (
               <option key={y} value={y}>
@@ -90,7 +90,7 @@ export default function CategoryGrowth({
           <select
             value={idx}
             onChange={(e) => setIdx(Number(e.target.value))}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {yearMonths.map((m) => (
               <option key={m.key} value={m.i}>

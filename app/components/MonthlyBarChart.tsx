@@ -17,8 +17,8 @@ const compact = (v: number) =>
   new Intl.NumberFormat("th-TH", { notation: "compact", maximumFractionDigits: 1 }).format(v);
 
 // สีแยกตามปี
-const COLORS: Record<number, string> = { 2568: "#10b981", 2569: "#0ea5e9" };
-const colorFor = (be: number | null) => (be && COLORS[be]) || "#94a3b8";
+const COLORS: Record<number, string> = { 2568: "#8e1538", 2569: "#c9a227" };
+const colorFor = (be: number | null) => (be && COLORS[be]) || "#9a8778";
 
 export default function MonthlyBarChart({
   data,
@@ -55,11 +55,11 @@ export default function MonthlyBarChart({
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.4} />
-            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e7dcc6" opacity={0.4} />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="#9a8778" />
             <YAxis
               tick={{ fontSize: 12 }}
-              stroke="#94a3b8"
+              stroke="#9a8778"
               width={56}
               tickFormatter={(v) => compact(Number(v))}
             />
@@ -67,7 +67,7 @@ export default function MonthlyBarChart({
               formatter={(v) => [baht(Number(v)), "ยอดขาย"]}
               contentStyle={{
                 borderRadius: 12,
-                border: "1px solid #e2e8f0",
+                border: "1px solid #e7dcc6",
                 fontSize: 13,
               }}
             />
@@ -75,7 +75,7 @@ export default function MonthlyBarChart({
               <ReferenceLine
                 key={b}
                 x={b}
-                stroke="#94a3b8"
+                stroke="#9a8778"
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
               />

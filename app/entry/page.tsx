@@ -49,7 +49,7 @@ export default async function EntryPage() {
       <header className="mb-8">
         <Link
           href="/"
-          className="text-sm text-emerald-600 hover:underline dark:text-emerald-400"
+          className="text-sm text-[#8e1538] hover:underline dark:text-[#e6b3c1]"
         >
           ← กลับหน้าสรุปการขาย
         </Link>

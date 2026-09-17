@@ -29,11 +29,11 @@ export default function BranchChart({ branches }: { branches: ReportBranch[] }) 
             data={data}
             margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.4} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e7dcc6" opacity={0.4} />
             <XAxis
               type="number"
               tick={{ fontSize: 11 }}
-              stroke="#94a3b8"
+              stroke="#9a8778"
               tickFormatter={(v) => compact(Number(v))}
             />
             <YAxis
@@ -41,18 +41,18 @@ export default function BranchChart({ branches }: { branches: ReportBranch[] }) 
               dataKey="name"
               width={140}
               tick={{ fontSize: 11 }}
-              stroke="#94a3b8"
+              stroke="#9a8778"
             />
             <Tooltip
               formatter={(v) => [baht(Number(v)), "ยอดขาย"]}
-              contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
+              contentStyle={{ borderRadius: 12, border: "1px solid #e7dcc6", fontSize: 13 }}
             />
-            <Bar dataKey="value" fill="#8b5cf6" radius={[0, 6, 6, 0]} maxBarSize={26} />
+            <Bar dataKey="value" fill="#b87333" radius={[0, 6, 6, 0]} maxBarSize={26} />
           </BarChart>
         </ResponsiveContainer>
       </div>
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[440px] text-sm">
           <thead>
             <tr className="text-left text-slate-500 dark:text-slate-400">
               <th className="py-2 font-medium">สาขา</th>
@@ -69,7 +69,7 @@ export default function BranchChart({ branches }: { branches: ReportBranch[] }) 
                 <td className="py-2 text-right text-slate-500 dark:text-slate-400">
                   {num(b.qty)}
                 </td>
-                <td className="py-2 text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                <td className="py-2 text-right font-semibold text-[#8e1538] dark:text-[#e6b3c1]">
                   {baht(b.value)}
                 </td>
               </tr>

@@ -32,11 +32,11 @@ export default function TopProductsChart({
             data={data}
             margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.4} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e7dcc6" opacity={0.4} />
             <XAxis
               type="number"
               tick={{ fontSize: 11 }}
-              stroke="#94a3b8"
+              stroke="#9a8778"
               tickFormatter={(v) => compact(Number(v))}
             />
             <YAxis
@@ -44,18 +44,18 @@ export default function TopProductsChart({
               dataKey="name"
               width={160}
               tick={{ fontSize: 11 }}
-              stroke="#94a3b8"
+              stroke="#9a8778"
               tickFormatter={(v) => short(String(v))}
             />
             <Tooltip
               formatter={(v) => [baht(Number(v)), "ยอดขาย"]}
               contentStyle={{
                 borderRadius: 12,
-                border: "1px solid #e2e8f0",
+                border: "1px solid #e7dcc6",
                 fontSize: 13,
               }}
             />
-            <Bar dataKey="value" fill="#0ea5e9" radius={[0, 6, 6, 0]} maxBarSize={26} />
+            <Bar dataKey="value" fill="#c9a227" radius={[0, 6, 6, 0]} maxBarSize={26} />
           </BarChart>
         </ResponsiveContainer>
       </div>

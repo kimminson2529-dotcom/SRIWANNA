@@ -23,7 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="th"
       className={`${notoThai.variable} h-full overflow-x-hidden antialiased`}
     >
-      <body className="flex min-h-full flex-col overflow-x-hidden bg-slate-50 font-[family-name:var(--font-noto-thai)] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-[#faf4e9] font-[family-name:var(--font-noto-thai)] text-slate-900 dark:bg-[#340818] dark:text-slate-100">
         {children}
       </body>
     </html>

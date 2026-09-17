@@ -41,7 +41,7 @@ function Growth({ pct }: { pct: number | null }) {
   const up = pct > 0;
   const down = pct < 0;
   const color = up
-    ? "text-emerald-600 dark:text-emerald-400"
+    ? "text-[#8e1538] dark:text-[#e6b3c1]"
     : down
       ? "text-red-500 dark:text-red-400"
       : "text-slate-400";
@@ -201,7 +201,7 @@ export default function BranchComparison({ data }: { data: BranchComparisonData 
           <select
             value={year}
             onChange={(e) => onYear(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="all">ทุกปี ({data.monthsMeta.length} เดือน)</option>
             {years.map((y) => (
@@ -214,7 +214,7 @@ export default function BranchComparison({ data }: { data: BranchComparisonData 
             <select
               value={month}
               onChange={(e) => setMonth(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               <option value="all">ทั้งปี {year}</option>
               {yearMonths.map((m) => (
@@ -253,7 +253,7 @@ export default function BranchComparison({ data }: { data: BranchComparisonData 
                 <td className="px-2 py-2 text-slate-800 dark:text-slate-100">
                   <span className="text-slate-400">{r.code}</span> {r.name}
                 </td>
-                <td className="px-2 py-2 text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                <td className="px-2 py-2 text-right font-semibold text-[#8e1538] dark:text-[#e6b3c1]">
                   {baht(r.value)}
                 </td>
                 <td className="px-2 py-2 text-right">
@@ -263,7 +263,7 @@ export default function BranchComparison({ data }: { data: BranchComparisonData 
                     </span>
                     <span className="hidden h-1.5 w-14 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700 sm:block">
                       <span
-                        className="block h-full rounded-full bg-emerald-500"
+                        className="block h-full rounded-full bg-[#c9a227]"
                         style={{ width: `${(r.share / maxShare) * 100}%` }}
                       />
                     </span>

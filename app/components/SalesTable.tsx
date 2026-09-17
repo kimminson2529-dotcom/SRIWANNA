@@ -60,7 +60,7 @@ export default function SalesTable({ sales }: { sales: Sale[] }) {
               <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">
                 {baht(s.price)}
               </td>
-              <td className="px-4 py-3 text-right font-semibold text-emerald-600 dark:text-emerald-400">
+              <td className="px-4 py-3 text-right font-semibold text-[#8e1538] dark:text-[#e6b3c1]">
                 {baht(s.total)}
               </td>
               <td className="px-4 py-3 text-right">

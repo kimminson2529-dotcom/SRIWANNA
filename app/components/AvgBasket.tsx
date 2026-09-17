@@ -73,7 +73,7 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
           <select
             value={sel}
             onChange={(e) => onBranch(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="all">ทุกสาขา</option>
             {basket.branches.map((b) => (
@@ -85,7 +85,7 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
           <select
             value={year}
             onChange={(e) => onYear(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {years.map((y) => (
               <option key={y} value={y}>
@@ -96,7 +96,7 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#b8860b] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="all">ทั้งปี</option>
             {yearMonths.map((m) => (
@@ -131,23 +131,23 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
       <div className="h-56 w-full sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.4} />
-            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e7dcc6" opacity={0.4} />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="#9a8778" />
             <YAxis
               tick={{ fontSize: 12 }}
-              stroke="#94a3b8"
+              stroke="#9a8778"
               width={44}
               tickFormatter={(v) => new Intl.NumberFormat("th-TH").format(v)}
             />
             <Tooltip
               formatter={(v) => [baht(Number(v)), "เฉลี่ย/บิล"]}
-              contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
+              contentStyle={{ borderRadius: 12, border: "1px solid #e7dcc6", fontSize: 13 }}
             />
             <Bar dataKey="avg" radius={[6, 6, 0, 0]} maxBarSize={48}>
               {chartData.map((d) => (
                 <Cell
                   key={d.key}
-                  fill={month !== "all" && d.key !== month ? "#fcd9a5" : "#f59e0b"}
+                  fill={month !== "all" && d.key !== month ? "#ecd9b0" : "#d4a017"}
                 />
               ))}
             </Bar>
@@ -156,7 +156,7 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[440px] text-sm">
           <thead>
             <tr className="text-left text-slate-500 dark:text-slate-400">
               <th className="py-2 font-medium">เดือน</th>

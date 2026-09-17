@@ -33,15 +33,15 @@ export default function SalesChart({ data }: { data: ChartPoint[] }) {
             data={data}
             margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.4} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e7dcc6" opacity={0.4} />
             <XAxis
               dataKey="label"
               tick={{ fontSize: 12 }}
-              stroke="#94a3b8"
+              stroke="#9a8778"
             />
             <YAxis
               tick={{ fontSize: 12 }}
-              stroke="#94a3b8"
+              stroke="#9a8778"
               width={70}
               tickFormatter={(v) => new Intl.NumberFormat("th-TH").format(v)}
             />
@@ -49,13 +49,13 @@ export default function SalesChart({ data }: { data: ChartPoint[] }) {
               formatter={(v) => [baht(Number(v)), "ยอดขาย"]}
               contentStyle={{
                 borderRadius: 12,
-                border: "1px solid #e2e8f0",
+                border: "1px solid #e7dcc6",
                 fontSize: 13,
               }}
             />
             <Bar
               dataKey="total"
-              fill="#10b981"
+              fill="#8e1538"
               radius={[6, 6, 0, 0]}
               maxBarSize={48}
             />

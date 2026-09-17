@@ -11,7 +11,7 @@ function GrowthCell({ value }: { value: number | null }) {
   const up = value > 0;
   const down = value < 0;
   const color = up
-    ? "text-emerald-600 dark:text-emerald-400"
+    ? "text-[#8e1538] dark:text-[#e6b3c1]"
     : down
       ? "text-red-500 dark:text-red-400"
       : "text-slate-400";
@@ -79,7 +79,7 @@ export default function YearOverYear({ months }: { months: ReportMonth[] }) {
           <span className="rounded-lg bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             รวมเดือนที่เทียบได้: {baht(sumCur)} เทียบ {baht(sumPrev)}
           </span>
-          <span className="rounded-lg bg-emerald-50 px-3 py-1 dark:bg-emerald-950/40">
+          <span className="rounded-lg bg-[#f6eeda] px-3 py-1 dark:bg-[#7a1030]/30">
             YoY รวม <GrowthCell value={totalYoY} />
           </span>
         </div>
