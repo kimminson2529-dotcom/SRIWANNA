@@ -123,10 +123,10 @@ export default function Page() {
         <Image
           src="/logo.png"
           alt="โลโก้ SRIWANNA"
-          width={112}
-          height={112}
+          width={176}
+          height={176}
           priority
-          className="h-16 w-16 shrink-0 object-contain drop-shadow sm:h-24 sm:w-24"
+          className="h-24 w-24 shrink-0 object-contain drop-shadow sm:h-36 sm:w-36"
         />
         <div className="min-w-0">
           <h1 className="bg-gradient-to-r from-[#e8c982] via-[#f3e2b0] to-[#cba35a] bg-clip-text text-2xl font-bold tracking-wide text-transparent sm:text-3xl">
