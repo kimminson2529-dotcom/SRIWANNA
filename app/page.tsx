@@ -1,3 +1,4 @@
+import Image from "next/image";
 import reportData from "./data/report.json";
 import type { SalesReport } from "./report-types";
 import { baht, num } from "./lib/format";
@@ -118,14 +119,24 @@ export default function Page() {
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-5xl px-4 py-8 sm:px-6">
-      <header className="mb-8 rounded-2xl border border-[#8a5a2e]/40 bg-gradient-to-br from-[#4d0c22] via-[#5c0f2b] to-[#7a1030] px-5 py-6 shadow-md sm:px-7 sm:py-8">
-        <h1 className="bg-gradient-to-r from-[#e8c982] via-[#f3e2b0] to-[#cba35a] bg-clip-text text-2xl font-bold tracking-wide text-transparent sm:text-3xl">
-          SRIWANNA · สรุปการขาย
-        </h1>
-        <p className="mt-1 text-sm text-[#f0dcc0]/80">
-          รายงานการขายหน้าร้าน · {report.months[0]?.label} –{" "}
-          {report.months[report.months.length - 1]?.label}
-        </p>
+      <header className="mb-8 flex items-center gap-4 rounded-2xl border border-[#8a5a2e]/40 bg-gradient-to-br from-[#4d0c22] via-[#5c0f2b] to-[#7a1030] px-5 py-5 shadow-md sm:gap-5 sm:px-7 sm:py-7">
+        <Image
+          src="/logo.png"
+          alt="โลโก้ SRIWANNA"
+          width={112}
+          height={112}
+          priority
+          className="h-16 w-16 shrink-0 object-contain drop-shadow sm:h-24 sm:w-24"
+        />
+        <div className="min-w-0">
+          <h1 className="bg-gradient-to-r from-[#e8c982] via-[#f3e2b0] to-[#cba35a] bg-clip-text text-2xl font-bold tracking-wide text-transparent sm:text-3xl">
+            SRIWANNA · สรุปการขาย
+          </h1>
+          <p className="mt-1 text-sm text-[#f0dcc0]/80">
+            รายงานการขายหน้าร้าน · {report.months[0]?.label} –{" "}
+            {report.months[report.months.length - 1]?.label}
+          </p>
+        </div>
       </header>
 
       <div className="space-y-6">
