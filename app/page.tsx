@@ -46,6 +46,21 @@ export default function Page() {
   const avgPerMonth = report.monthCount ? report.grandValue / report.monthCount : 0;
   const salesPerBranch = report.branchCount ? report.grandValue / report.branchCount : 0;
 
+  // ยอดขายสะสมของปีล่าสุด (เฉพาะเดือนที่ครบในไฟล์รายงาน)
+  const FULL_MONTH = [
+    "", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+  ];
+  const latestYear = Math.max(...report.months.map((m) => m.be ?? 0));
+  const yMonths = report.months
+    .filter((m) => m.be === latestYear)
+    .sort((a, b) => a.order - b.order);
+  const yTotal = yMonths.reduce((s, m) => s + m.totalValue, 0);
+  const yQty = yMonths.reduce((s, m) => s + m.totalQty, 0);
+  const yRange = yMonths.length
+    ? `ตั้งแต่เดือน${FULL_MONTH[yMonths[0].order]} - เดือน${FULL_MONTH[yMonths[yMonths.length - 1].order]} ${latestYear}`
+    : "";
+
   // ===== ข้อมูลจัดอันดับสาขา (รองรับเลือกเดือน) =====
   const DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   const isLeap = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
@@ -116,9 +131,9 @@ export default function Page() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card
-            label="ยอดขายรวม"
-            value={compactBaht(report.grandValue)}
-            sub={`${report.monthCount} เดือน · ${num(report.grandQty)} หน่วย`}
+            label={`ยอดขายสะสม ${latestYear}`}
+            value={compactBaht(yTotal)}
+            sub={`${yRange} · ${num(yQty)} หน่วย`}
           />
           <Card label="เฉลี่ยต่อเดือน" value={compactBaht(avgPerMonth)} />
           <Card
