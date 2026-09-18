@@ -46,6 +46,28 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
     setMonth("all");
   };
 
+  // MoM ของยอดเฉลี่ยต่อบิล (เทียบเดือนก่อนหน้าในลำดับข้อมูลของสาขาที่เลือก)
+  const momOf = (key: string) => {
+    const idx = sourceMonths.findIndex((x) => x.key === key);
+    if (idx <= 0) return null;
+    const prev = sourceMonths[idx - 1].avgBasket;
+    const cur = sourceMonths[idx].avgBasket;
+    return prev ? ((cur - prev) / prev) * 100 : null;
+  };
+  const MoM = ({ v }: { v: number | null }) => {
+    if (v === null) return <span className="text-slate-300 dark:text-slate-600">—</span>;
+    const up = v > 0;
+    const down = v < 0;
+    return (
+      <span
+        className={`font-semibold ${up ? "text-[#8e1538] dark:text-[#e6b3c1]" : down ? "text-red-500 dark:text-red-400" : "text-slate-400"}`}
+      >
+        {up ? "▲ +" : down ? "▼ " : ""}
+        {v.toFixed(1)}%
+      </span>
+    );
+  };
+
   // แถวที่แสดง + ตัวเลขใหญ่
   const shown =
     month === "all" ? yearMonths : yearMonths.filter((m) => m.key === month);
@@ -165,6 +187,7 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
                 ยอดขาย
               </th>
               <th className="py-2 text-right font-medium">เฉลี่ย/บิล</th>
+              <th className="py-2 text-right font-medium">MoM</th>
             </tr>
           </thead>
           <tbody>
@@ -185,11 +208,14 @@ export default function AvgBasket({ basket }: { basket: BasketSummary }) {
                 <td className="py-2 text-right font-semibold text-amber-600 dark:text-amber-400">
                   {baht(m.avgBasket)}
                 </td>
+                <td className="py-2 text-right">
+                  <MoM v={momOf(m.key)} />
+                </td>
               </tr>
             ))}
             {yearMonths.length === 0 && (
               <tr>
-                <td colSpan={4} className="py-6 text-center text-slate-400">
+                <td colSpan={5} className="py-6 text-center text-slate-400">
                   ไม่มีข้อมูลบิลในมุมมองนี้
                 </td>
               </tr>
