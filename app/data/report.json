@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-18T01:49:53.080Z",
+  "generatedAt": "2026-09-18T02:00:51.972Z",
   "source": "รายงานการขายหน้าร้าน - ตามสินค้า - ตามสาขา (.xls)",
   "note": "ยอดขายเป็นมูลค่ารวมสุทธิ (รวมภาษี หลังหักส่วนลด)",
   "grandValue": 84151707.9,
@@ -1865,10 +1865,10 @@
     }
   ],
   "basket": {
-    "scope": "302 วันนิมมานเชียงใหม่, 205 เทอมินอลพัทยา2, 101 เอเชียทีค1, 202 พัทยาบีช, 201 เทอมินอลพัทยา, 206 บิ๊กซีพัทยา3, 301 เมญ่าเชียงใหม่, 102 เอเชียทีค2, 203 มารีน่า, 104 วัดไตรมิตร, 502 เซ็นทรัลกระบี่, 109 สุขสยาม",
-    "totalBills": 66707,
-    "totalValue": 26162186.2,
-    "avgBasket": 392.2,
+    "scope": "302 วันนิมมานเชียงใหม่, 205 เทอมินอลพัทยา2, 201 เทอมินอลพัทยา, 202 พัทยาบีช, 101 เอเชียทีค1, 206 บิ๊กซีพัทยา3, 301 เมญ่าเชียงใหม่, 102 เอเชียทีค2, 203 มารีน่า, 104 วัดไตรมิตร, 502 เซ็นทรัลกระบี่, 109 สุขสยาม",
+    "totalBills": 80592,
+    "totalValue": 31754950.2,
+    "avgBasket": 394.02,
     "months": [
       {
         "key": "2569-01",
@@ -1884,9 +1884,9 @@
         "order": 2,
         "be": 2569,
         "label": "ก.พ. 2569",
-        "bills": 884,
-        "billTotal": 432171,
-        "avgBasket": 488.88
+        "bills": 14769,
+        "billTotal": 6024935,
+        "avgBasket": 407.94
       },
       {
         "key": "2569-03",
@@ -1947,10 +1947,19 @@
       {
         "code": "302",
         "name": "วันนิมมานเชียงใหม่",
-        "bills": 14771,
-        "value": 5824834,
-        "avgBasket": 394.34,
+        "bills": 18026,
+        "value": 7194500,
+        "avgBasket": 399.12,
         "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 3255,
+            "billTotal": 1369666,
+            "avgBasket": 420.79
+          },
           {
             "key": "2569-03",
             "order": 3,
@@ -2010,10 +2019,19 @@
       {
         "code": "205",
         "name": "เทอมินอลพัทยา2",
-        "bills": 11552,
-        "value": 5459805,
-        "avgBasket": 472.63,
+        "bills": 14030,
+        "value": 6635430,
+        "avgBasket": 472.95,
         "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 2478,
+            "billTotal": 1175625,
+            "avgBasket": 474.42
+          },
           {
             "key": "2569-03",
             "order": 3,
@@ -2067,6 +2085,150 @@
             "bills": 2610,
             "billTotal": 1232763,
             "avgBasket": 472.32
+          }
+        ]
+      },
+      {
+        "code": "201",
+        "name": "เทอมินอลพัทยา",
+        "bills": 6202,
+        "value": 3331446,
+        "avgBasket": 537.16,
+        "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 1593,
+            "billTotal": 901740,
+            "avgBasket": 566.06
+          },
+          {
+            "key": "2569-03",
+            "order": 3,
+            "be": 2569,
+            "label": "มี.ค. 2569",
+            "bills": 1249,
+            "billTotal": 675958,
+            "avgBasket": 541.2
+          },
+          {
+            "key": "2569-04",
+            "order": 4,
+            "be": 2569,
+            "label": "เม.ย. 2569",
+            "bills": 1051,
+            "billTotal": 576471,
+            "avgBasket": 548.5
+          },
+          {
+            "key": "2569-05",
+            "order": 5,
+            "be": 2569,
+            "label": "พ.ค. 2569",
+            "bills": 275,
+            "billTotal": 139453,
+            "avgBasket": 507.1
+          },
+          {
+            "key": "2569-06",
+            "order": 6,
+            "be": 2569,
+            "label": "มิ.ย. 2569",
+            "bills": 314,
+            "billTotal": 151730,
+            "avgBasket": 483.22
+          },
+          {
+            "key": "2569-07",
+            "order": 7,
+            "be": 2569,
+            "label": "ก.ค. 2569",
+            "bills": 796,
+            "billTotal": 422610,
+            "avgBasket": 530.92
+          },
+          {
+            "key": "2569-08",
+            "order": 8,
+            "be": 2569,
+            "label": "ส.ค. 2569",
+            "bills": 924,
+            "billTotal": 463484,
+            "avgBasket": 501.61
+          }
+        ]
+      },
+      {
+        "code": "202",
+        "name": "พัทยาบีช",
+        "bills": 6853,
+        "value": 3084085,
+        "avgBasket": 450.03,
+        "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 1390,
+            "billTotal": 639088,
+            "avgBasket": 459.78
+          },
+          {
+            "key": "2569-03",
+            "order": 3,
+            "be": 2569,
+            "label": "มี.ค. 2569",
+            "bills": 1146,
+            "billTotal": 517436,
+            "avgBasket": 451.51
+          },
+          {
+            "key": "2569-04",
+            "order": 4,
+            "be": 2569,
+            "label": "เม.ย. 2569",
+            "bills": 776,
+            "billTotal": 367294,
+            "avgBasket": 473.32
+          },
+          {
+            "key": "2569-05",
+            "order": 5,
+            "be": 2569,
+            "label": "พ.ค. 2569",
+            "bills": 737,
+            "billTotal": 323649,
+            "avgBasket": 439.14
+          },
+          {
+            "key": "2569-06",
+            "order": 6,
+            "be": 2569,
+            "label": "มิ.ย. 2569",
+            "bills": 756,
+            "billTotal": 336086,
+            "avgBasket": 444.56
+          },
+          {
+            "key": "2569-07",
+            "order": 7,
+            "be": 2569,
+            "label": "ก.ค. 2569",
+            "bills": 999,
+            "billTotal": 416731,
+            "avgBasket": 417.15
+          },
+          {
+            "key": "2569-08",
+            "order": 8,
+            "be": 2569,
+            "label": "ส.ค. 2569",
+            "bills": 1049,
+            "billTotal": 483801,
+            "avgBasket": 461.2
           }
         ]
       },
@@ -2152,138 +2314,21 @@
         ]
       },
       {
-        "code": "202",
-        "name": "พัทยาบีช",
-        "bills": 5463,
-        "value": 2444997,
-        "avgBasket": 447.56,
-        "months": [
-          {
-            "key": "2569-03",
-            "order": 3,
-            "be": 2569,
-            "label": "มี.ค. 2569",
-            "bills": 1146,
-            "billTotal": 517436,
-            "avgBasket": 451.51
-          },
-          {
-            "key": "2569-04",
-            "order": 4,
-            "be": 2569,
-            "label": "เม.ย. 2569",
-            "bills": 776,
-            "billTotal": 367294,
-            "avgBasket": 473.32
-          },
-          {
-            "key": "2569-05",
-            "order": 5,
-            "be": 2569,
-            "label": "พ.ค. 2569",
-            "bills": 737,
-            "billTotal": 323649,
-            "avgBasket": 439.14
-          },
-          {
-            "key": "2569-06",
-            "order": 6,
-            "be": 2569,
-            "label": "มิ.ย. 2569",
-            "bills": 756,
-            "billTotal": 336086,
-            "avgBasket": 444.56
-          },
-          {
-            "key": "2569-07",
-            "order": 7,
-            "be": 2569,
-            "label": "ก.ค. 2569",
-            "bills": 999,
-            "billTotal": 416731,
-            "avgBasket": 417.15
-          },
-          {
-            "key": "2569-08",
-            "order": 8,
-            "be": 2569,
-            "label": "ส.ค. 2569",
-            "bills": 1049,
-            "billTotal": 483801,
-            "avgBasket": 461.2
-          }
-        ]
-      },
-      {
-        "code": "201",
-        "name": "เทอมินอลพัทยา",
-        "bills": 4609,
-        "value": 2429706,
-        "avgBasket": 527.17,
-        "months": [
-          {
-            "key": "2569-03",
-            "order": 3,
-            "be": 2569,
-            "label": "มี.ค. 2569",
-            "bills": 1249,
-            "billTotal": 675958,
-            "avgBasket": 541.2
-          },
-          {
-            "key": "2569-04",
-            "order": 4,
-            "be": 2569,
-            "label": "เม.ย. 2569",
-            "bills": 1051,
-            "billTotal": 576471,
-            "avgBasket": 548.5
-          },
-          {
-            "key": "2569-05",
-            "order": 5,
-            "be": 2569,
-            "label": "พ.ค. 2569",
-            "bills": 275,
-            "billTotal": 139453,
-            "avgBasket": 507.1
-          },
-          {
-            "key": "2569-06",
-            "order": 6,
-            "be": 2569,
-            "label": "มิ.ย. 2569",
-            "bills": 314,
-            "billTotal": 151730,
-            "avgBasket": 483.22
-          },
-          {
-            "key": "2569-07",
-            "order": 7,
-            "be": 2569,
-            "label": "ก.ค. 2569",
-            "bills": 796,
-            "billTotal": 422610,
-            "avgBasket": 530.92
-          },
-          {
-            "key": "2569-08",
-            "order": 8,
-            "be": 2569,
-            "label": "ส.ค. 2569",
-            "bills": 924,
-            "billTotal": 463484,
-            "avgBasket": 501.61
-          }
-        ]
-      },
-      {
         "code": "206",
         "name": "บิ๊กซีพัทยา3",
-        "bills": 3092,
-        "value": 1653526,
-        "avgBasket": 534.78,
+        "bills": 3719,
+        "value": 1984185,
+        "avgBasket": 533.53,
         "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 627,
+            "billTotal": 330659,
+            "avgBasket": 527.37
+          },
           {
             "key": "2569-03",
             "order": 3,
@@ -2343,10 +2388,19 @@
       {
         "code": "301",
         "name": "เมญ่าเชียงใหม่",
-        "bills": 2987,
-        "value": 1594955,
-        "avgBasket": 533.97,
+        "bills": 3741,
+        "value": 1982820,
+        "avgBasket": 530.02,
         "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 754,
+            "billTotal": 387865,
+            "avgBasket": 514.41
+          },
           {
             "key": "2569-03",
             "order": 3,
@@ -2406,10 +2460,19 @@
       {
         "code": "102",
         "name": "เอเชียทีค2",
-        "bills": 3125,
-        "value": 1428299.1,
-        "avgBasket": 457.06,
+        "bills": 3723,
+        "value": 1700975.1,
+        "avgBasket": 456.88,
         "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 598,
+            "billTotal": 272676,
+            "avgBasket": 455.98
+          },
           {
             "key": "2569-03",
             "order": 3,
@@ -2469,10 +2532,19 @@
       {
         "code": "203",
         "name": "มารีน่า",
-        "bills": 2776,
-        "value": 1141472,
-        "avgBasket": 411.19,
+        "bills": 3371,
+        "value": 1358175,
+        "avgBasket": 402.9,
         "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 595,
+            "billTotal": 216703,
+            "avgBasket": 364.21
+          },
           {
             "key": "2569-03",
             "order": 3,
@@ -2532,10 +2604,19 @@
       {
         "code": "104",
         "name": "วัดไตรมิตร",
-        "bills": 10424,
-        "value": 700665,
-        "avgBasket": 67.22,
+        "bills": 12668,
+        "value": 863592,
+        "avgBasket": 68.17,
         "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 2244,
+            "billTotal": 162927,
+            "avgBasket": 72.61
+          },
           {
             "key": "2569-03",
             "order": 3,
@@ -2595,10 +2676,19 @@
       {
         "code": "502",
         "name": "เซ็นทรัลกระบี่",
-        "bills": 1262,
-        "value": 503898,
-        "avgBasket": 399.29,
+        "bills": 1613,
+        "value": 639713,
+        "avgBasket": 396.6,
         "months": [
+          {
+            "key": "2569-02",
+            "order": 2,
+            "be": 2569,
+            "label": "ก.พ. 2569",
+            "bills": 351,
+            "billTotal": 135815,
+            "avgBasket": 386.94
+          },
           {
             "key": "2569-03",
             "order": 3,
