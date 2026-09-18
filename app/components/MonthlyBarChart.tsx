@@ -18,16 +18,19 @@ const compact = (v: number) =>
 
 // สีแยกตามปี
 const COLORS: Record<number, string> = { 2568: "#8e1538", 2569: "#c9a227" };
-const colorFor = (be: number | null) => (be && COLORS[be]) || "#9a8778";
+const PARTIAL = "#e0a458"; // เดือนปัจจุบัน (ยังไม่ครบเดือน)
+const colorFor = (be: number | null, partial?: boolean) =>
+  partial ? PARTIAL : (be && COLORS[be]) || "#9a8778";
 
 export default function MonthlyBarChart({
   data,
 }: {
-  data: { label: string; value: number; be: number | null }[];
+  data: { label: string; value: number; be: number | null; partial?: boolean }[];
 }) {
-  const years = [...new Set(data.map((d) => d.be))].filter(
+  const years = [...new Set(data.filter((d) => !d.partial).map((d) => d.be))].filter(
     (y): y is number => y !== null,
   );
+  const hasPartial = data.some((d) => d.partial);
   // ป้ายเดือนแรกของแต่ละปี (ยกเว้นปีแรก) สำหรับเส้นแบ่ง
   const boundaries: string[] = [];
   for (let i = 1; i < data.length; i++) {
@@ -50,6 +53,15 @@ export default function MonthlyBarChart({
               ปี {y}
             </span>
           ))}
+          {hasPartial && (
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-3 w-3 rounded-sm"
+                style={{ background: PARTIAL }}
+              />
+              เดือนปัจจุบัน*
+            </span>
+          )}
         </div>
       </div>
       <div className="h-72 w-full">
@@ -82,12 +94,17 @@ export default function MonthlyBarChart({
             ))}
             <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={40}>
               {data.map((d, i) => (
-                <Cell key={i} fill={colorFor(d.be)} />
+                <Cell key={i} fill={colorFor(d.be, d.partial)} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
+      {hasPartial && (
+        <p className="mt-2 text-xs text-slate-400">
+          * เดือนปัจจุบันเป็นข้อมูลที่ยังไม่ครบเดือน (ยอดจริงถึงปัจจุบัน)
+        </p>
+      )}
     </div>
   );
 }

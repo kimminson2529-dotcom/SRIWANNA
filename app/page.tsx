@@ -33,19 +33,31 @@ function Card({ label, value, sub }: { label: string; value: string; sub?: strin
 }
 
 export default function Page() {
-  const monthlyData = report.months.map((m) => ({
+  const monthlyData: {
+    label: string;
+    value: number;
+    be: number | null;
+    partial: boolean;
+  }[] = report.months.map((m) => ({
     label: m.label,
     value: m.totalValue,
     be: m.be,
+    partial: false,
   }));
+  if (report.current) {
+    monthlyData.push({
+      label: report.current.label,
+      value: report.current.value,
+      be: report.current.be,
+      partial: true,
+    });
+  }
   const topData = report.topByValue.slice(0, 10).map((p) => ({
     name: p.name || p.code,
     value: p.value,
   }));
 
-  const bestMonth = [...report.months].sort((a, b) => b.totalValue - a.totalValue)[0];
   const avgPerMonth = report.monthCount ? report.grandValue / report.monthCount : 0;
-  const salesPerBranch = report.branchCount ? report.grandValue / report.branchCount : 0;
 
   // ยอดขายสะสมของปีล่าสุด (เฉพาะเดือนที่ครบในไฟล์รายงาน)
   const FULL_MONTH = [
@@ -61,6 +73,11 @@ export default function Page() {
   const yRange = yMonths.length
     ? `ตั้งแต่เดือน${FULL_MONTH[yMonths[0].order]} - เดือน${FULL_MONTH[yMonths[yMonths.length - 1].order]} ${latestYear}`
     : "";
+  // ยอดขายต่อสาขา (เฉพาะปีล่าสุด)
+  const branches2569 = new Set<string>();
+  yMonths.forEach((m) => m.branches.forEach((b) => branches2569.add(b.code)));
+  const branchCount2569 = branches2569.size;
+  const salesPerBranch = branchCount2569 ? yTotal / branchCount2569 : 0;
 
   // ===== ข้อมูลจัดอันดับสาขา (รองรับเลือกเดือน) =====
   const DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -169,9 +186,9 @@ export default function Page() {
           )}
           <Card label="เฉลี่ยต่อเดือน" value={compactBaht(avgPerMonth)} />
           <Card
-            label="ยอดขายต่อสาขา"
+            label={`ยอดขายต่อสาขา ${latestYear}`}
             value={compactBaht(salesPerBranch)}
-            sub={`ยอดรวม ÷ ${report.branchCount} สาขา`}
+            sub={`ยอดขาย ${latestYear} ÷ ${branchCount2569} สาขา`}
           />
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -192,11 +209,6 @@ export default function Page() {
               {lastM?.label} เทียบ {prevM?.label}
             </p>
           </div>
-          <Card
-            label="เดือนที่ขายมากสุด"
-            value={bestMonth?.label ?? "-"}
-            sub={bestMonth ? baht(bestMonth.totalValue) : ""}
-          />
           <Card
             label="ยอดเฉลี่ยต่อบิล (AVG Basket)"
             value={baht(report.basket.avgBasket)}
