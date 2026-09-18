@@ -69,6 +69,9 @@ function getPeriod(rows) {
             order: Number(s[2]),
             ceYear: Number(s[3]),
             isRange: diffDays > 45,
+            startDay: Number(s[1]),
+            endDay: Number(e[1]),
+            endMonth: Number(e[2]),
           };
         }
       }
@@ -171,6 +174,12 @@ function main() {
   const months = [];
   const overall = new Map();
   const branchOverall = new Map();
+  let current = null; // เดือนปัจจุบัน (ไฟล์ยอดขายล่าสุด แบบไม่ครบเดือน)
+
+  const DAYS_M = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const isLeapYr = (y) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const daysInMonth = (order, ceYear) =>
+    order === 2 && isLeapYr(ceYear) ? 29 : DAYS_M[order] || 30;
 
   const skipped = [];
   for (const f of files) {
@@ -203,6 +212,28 @@ function main() {
       continue;
     }
     const { products, branches, totalQty, totalValue, grand } = parsed;
+
+    // ไฟล์เดือนปัจจุบัน (ไม่ครบเดือน) = วันสิ้นสุด < วันสุดท้ายของเดือน -> แยกเป็น "ยอดขายปัจจุบัน" + ประมาณการณ์ ไม่รวมในยอดสะสม
+    const dim = daysInMonth(order, ceYear);
+    if (per.endDay && per.endDay < dim && per.endMonth === order) {
+      const val = round2(totalValue);
+      current = {
+        key: `${be}-${String(order).padStart(2, "0")}`,
+        order,
+        be,
+        label: `${MONTH_LABEL[order] ?? order} ${be}`,
+        daysWithData: per.endDay,
+        daysInMonth: dim,
+        value: val,
+        qty: totalQty,
+        forecast: round2((totalValue / per.endDay) * dim),
+        startDay: per.startDay,
+      };
+      console.warn(
+        `  ↷ เดือนปัจจุบัน (ไม่ครบเดือน): ${f} -> ยอด ${val} (${per.endDay}/${dim} วัน) ประมาณการณ์ ${current.forecast}`,
+      );
+      continue;
+    }
 
     if (grand && Math.abs(round2(grand.value) - round2(totalValue)) > 1) {
       console.warn(
@@ -456,6 +487,7 @@ function main() {
     branches,
     basket,
     categories,
+    current,
   };
 
   // เขียนไฟล์รายเดือน (รายละเอียดสินค้า + แยกสาขา) ไว้ที่ public/monthly เพื่อโหลดเมื่อเลือก

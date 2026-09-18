@@ -65,6 +65,19 @@ export type Category = {
 
 export type MonthKey = { key: string; label: string };
 
+export type CurrentMonth = {
+  key: string;
+  order: number;
+  be: number | null;
+  label: string;
+  daysWithData: number;
+  daysInMonth: number;
+  value: number;
+  qty: number;
+  forecast: number;
+  startDay: number;
+};
+
 export type SalesReport = {
   generatedAt: string;
   source: string;
@@ -82,4 +95,5 @@ export type SalesReport = {
   branches: ReportBranch[];
   basket: BasketSummary;
   categories: Category[];
+  current: CurrentMonth | null;
 };

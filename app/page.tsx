@@ -119,7 +119,7 @@ export default function Page() {
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-5xl px-4 py-8 sm:px-6">
-      <header className="mb-8 flex items-center gap-4 rounded-2xl border border-[#8a5a2e]/40 bg-gradient-to-br from-[#4d0c22] via-[#5c0f2b] to-[#7a1030] px-5 py-5 shadow-md sm:gap-5 sm:px-7 sm:py-7">
+      <header className="mb-8 flex items-center gap-4 rounded-2xl border border-[#8a5a2e]/40 bg-gradient-to-br from-[#4d0c22] via-[#5c0f2b] to-[#7a1030] px-5 py-3 shadow-md sm:gap-5 sm:px-7 sm:py-4">
         <Image
           src="/logo.png"
           alt="โลโก้ SRIWANNA"
@@ -146,6 +146,27 @@ export default function Page() {
             value={compactBaht(yTotal)}
             sub={`${yRange} · ${num(yQty)} หน่วย`}
           />
+          {report.current && (
+            <>
+              <Card
+                label="ยอดขายปัจจุบัน"
+                value={compactBaht(report.current.value)}
+                sub={`${report.current.label} (วันที่ ${report.current.startDay}–${report.current.daysWithData}) · ${num(report.current.qty)} หน่วย`}
+              />
+              <div className="min-w-0 rounded-2xl border border-[#8a5a2e]/50 bg-[#fbf3e2] p-4 shadow-sm dark:border-[#8a5a2e]/40 dark:bg-[#7a1030]/20 sm:p-5">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  ประมาณการณ์ยอดขายเดือนล่าสุด
+                </p>
+                <p className="mt-1 break-words text-2xl font-bold text-[#a67c1a] dark:text-[#e6c079]">
+                  {compactBaht(report.current.forecast)}
+                </p>
+                <p className="mt-0.5 break-words text-xs text-slate-400">
+                  {report.current.label} · ({num(report.current.value)} ÷{" "}
+                  {report.current.daysWithData} วัน) × {report.current.daysInMonth} วัน
+                </p>
+              </div>
+            </>
+          )}
           <Card label="เฉลี่ยต่อเดือน" value={compactBaht(avgPerMonth)} />
           <Card
             label="ยอดขายต่อสาขา"
