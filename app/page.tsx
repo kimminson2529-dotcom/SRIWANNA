@@ -235,7 +235,11 @@ export default function Page() {
           monthKeys={report.monthKeys}
         />
 
-        <BrandBreakdown brands={report.brands} brandCount={report.brandCount} />
+        <BrandBreakdown
+          brandSeries={report.brandSeries}
+          brandCount={report.brandCount}
+          monthKeys={report.monthKeys}
+        />
 
         <AvgBasket basket={report.basket} />
 

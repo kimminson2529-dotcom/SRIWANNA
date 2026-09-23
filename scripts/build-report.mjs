@@ -462,31 +462,35 @@ function main() {
     }
     return "ไม่ระบุแบรนด์";
   };
-  const brandMap = new Map();
-  for (const p of overall.values()) {
-    const b = brandOf(p.name);
-    const cur = brandMap.get(b) || { name: b, value: 0, qty: 0 };
-    cur.value += p.value;
-    cur.qty += p.qty;
-    brandMap.set(b, cur);
+  // แบรนด์รายเดือน: brand -> value ต่อเดือน (สำหรับเลือกเดือน + MoM)
+  const brandMonth = new Map();
+  for (const m of months) {
+    for (const p of m.products) {
+      const b = brandOf(p.name);
+      const bm = brandMonth.get(b) || new Map();
+      bm.set(m.key, (bm.get(m.key) || 0) + p.value);
+      brandMonth.set(b, bm);
+    }
   }
-  const brandTotal = [...brandMap.values()].reduce((s, b) => s + b.value, 0);
-  const sortedBrands = [...brandMap.values()].sort((a, b) => b.value - a.value);
-  const TOP_BRANDS = 15;
-  const brands = sortedBrands.slice(0, TOP_BRANDS).map((b) => ({
-    name: b.name,
-    value: round2(b.value),
-    qty: b.qty,
-    share: brandTotal ? round2((b.value / brandTotal) * 100) : 0,
-  }));
-  const rest = sortedBrands.slice(TOP_BRANDS);
-  if (rest.length) {
-    const rv = rest.reduce((s, b) => s + b.value, 0);
-    brands.push({
-      name: `อื่นๆ (${rest.length} แบรนด์)`,
-      value: round2(rv),
-      qty: rest.reduce((s, b) => s + b.qty, 0),
-      share: brandTotal ? round2((rv / brandTotal) * 100) : 0,
+  const brandTotals = [...brandMonth.entries()]
+    .map(([name, bm]) => {
+      const series = monthKeys.map((mk) => round2(bm.get(mk.key) || 0));
+      return { name, series, total: round2(series.reduce((s, v) => s + v, 0)) };
+    })
+    .sort((a, b) => b.total - a.total);
+  const brandCount = brandTotals.length;
+  const TOP_BRANDS = 50; // เก็บ 50 อันดับแยก (UI แสดง 15 ต่อเดือน) ที่เหลือรวมเป็น "อื่นๆ"
+  const brandSeries = brandTotals
+    .slice(0, TOP_BRANDS)
+    .map((b) => ({ name: b.name, series: b.series }));
+  const restBrands = brandTotals.slice(TOP_BRANDS);
+  if (restBrands.length) {
+    const restSeries = monthKeys.map((_, i) =>
+      round2(restBrands.reduce((s, b) => s + b.series[i], 0)),
+    );
+    brandSeries.push({
+      name: `อื่นๆ (${restBrands.length} แบรนด์)`,
+      series: restSeries,
     });
   }
 
@@ -527,8 +531,8 @@ function main() {
     branches,
     basket,
     categories,
-    brands,
-    brandCount: brandMap.size,
+    brandSeries,
+    brandCount,
     current,
   };
 
