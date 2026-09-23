@@ -63,6 +63,13 @@ export type Category = {
   series: number[]; // เรียงตาม monthKeys
 };
 
+export type Brand = {
+  name: string;
+  value: number;
+  qty: number;
+  share: number;
+};
+
 export type MonthKey = { key: string; label: string };
 
 export type CurrentMonth = {
@@ -95,5 +102,7 @@ export type SalesReport = {
   branches: ReportBranch[];
   basket: BasketSummary;
   categories: Category[];
+  brands: Brand[];
+  brandCount: number;
   current: CurrentMonth | null;
 };

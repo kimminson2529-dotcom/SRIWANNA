@@ -11,6 +11,7 @@ import BranchComparison, {
   type BranchComparisonData,
 } from "./components/BranchComparison";
 import CategoryGrowth from "./components/CategoryGrowth";
+import BrandBreakdown from "./components/BrandBreakdown";
 import AvgBasket from "./components/AvgBasket";
 import MonthExplorer from "./components/MonthExplorer";
 
@@ -233,6 +234,8 @@ export default function Page() {
           categories={report.categories}
           monthKeys={report.monthKeys}
         />
+
+        <BrandBreakdown brands={report.brands} brandCount={report.brandCount} />
 
         <AvgBasket basket={report.basket} />
 

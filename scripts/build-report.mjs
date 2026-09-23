@@ -450,6 +450,46 @@ function main() {
     })
     .sort((a, b) => b.total - a.total);
 
+  // ===== ยอดขายแยกตามแบรนด์ (ดึงแบรนด์จากท้ายชื่อสินค้า ข้ามคำขนาด/โปรฯ/ตัวเลข) =====
+  const BRAND_SKIP = /^(กรัม|กก|มล|ml|ลิตร|ชิ้น|ซอง|แพค|แพ็ค|แผง|กล่อง|ห่อ|โหล|แถม|ฟรี|บาท|ดาว|เซ็ต|เซต|เซ็ท|set|คู่|อัน|กระปุก|ขวด|ถุง|แก้ว|cc|รส|กลิ่น|แบบ|สูตร)$/i;
+  const brandOf = (name) => {
+    const w = String(name).trim().split(/\s+/);
+    for (let i = w.length - 1; i >= 0; i--) {
+      const t = w[i];
+      if (/[0-9๐-๙]/.test(t)) continue;
+      if (BRAND_SKIP.test(t)) continue;
+      return t;
+    }
+    return "ไม่ระบุแบรนด์";
+  };
+  const brandMap = new Map();
+  for (const p of overall.values()) {
+    const b = brandOf(p.name);
+    const cur = brandMap.get(b) || { name: b, value: 0, qty: 0 };
+    cur.value += p.value;
+    cur.qty += p.qty;
+    brandMap.set(b, cur);
+  }
+  const brandTotal = [...brandMap.values()].reduce((s, b) => s + b.value, 0);
+  const sortedBrands = [...brandMap.values()].sort((a, b) => b.value - a.value);
+  const TOP_BRANDS = 15;
+  const brands = sortedBrands.slice(0, TOP_BRANDS).map((b) => ({
+    name: b.name,
+    value: round2(b.value),
+    qty: b.qty,
+    share: brandTotal ? round2((b.value / brandTotal) * 100) : 0,
+  }));
+  const rest = sortedBrands.slice(TOP_BRANDS);
+  if (rest.length) {
+    const rv = rest.reduce((s, b) => s + b.value, 0);
+    brands.push({
+      name: `อื่นๆ (${rest.length} แบรนด์)`,
+      value: round2(rv),
+      qty: rest.reduce((s, b) => s + b.qty, 0),
+      share: brandTotal ? round2((rv / brandTotal) * 100) : 0,
+    });
+  }
+
   // จำนวนวันในช่วงข้อมูล (สำหรับ เฉลี่ย/วัน)
   const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   const isLeap = (y) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
@@ -487,6 +527,8 @@ function main() {
     branches,
     basket,
     categories,
+    brands,
+    brandCount: brandMap.size,
     current,
   };
 
